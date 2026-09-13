@@ -1,11 +1,18 @@
 (function () {
-  document.addEventListener('DOMContentLoaded', () => {
-    // Find all <pre> tags inside Moodle question text blocks to avoid decorating random system pre tags
-    const preTags = document.querySelectorAll('.qtext pre, .formulation pre');
+  function decoratePreTags() {
+    // Find all <pre> tags inside Moodle question blocks, or all pre tags if outside standard Moodle wrappers
+    let preTags = document.querySelectorAll('.que pre, .formulation pre, .qtext pre, .moodle-question pre');
+    if (preTags.length === 0) {
+      preTags = document.querySelectorAll('pre:not(#notice pre):not(.debugging pre)');
+    }
 
     preTags.forEach(pre => {
+      if (pre.hasAttribute('data-decorated')) return;
+      pre.setAttribute('data-decorated', 'true');
+
       // Create a wrapper to safely absolute-position the button over the pre (even if it scrolls)
       const wrapper = document.createElement('div');
+      wrapper.className = 'moodle-pre-wrapper';
       wrapper.style.position = 'relative';
 
       // Copy margins so layout doesn't break
@@ -65,5 +72,12 @@
       // Insert button inside the wrapper, overlapping the <pre>
       wrapper.appendChild(btn);
     });
-  });
+  }
+
+  // Run as soon as DOM is ready or immediately if already loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', decoratePreTags);
+  } else {
+    decoratePreTags();
+  }
 })();

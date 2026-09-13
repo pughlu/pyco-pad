@@ -78,7 +78,7 @@ if (isSyncEnabled) {
                 
                 // Only insert if the user is actively focused on an editor
                 const activeEl = document.activeElement;
-                if (activeEl && (activeEl.isContentEditable || ['TEXTAREA', 'INPUT'].includes(activeEl.tagName))) {
+                if (activeEl instanceof HTMLElement && (activeEl.isContentEditable || ['TEXTAREA', 'INPUT'].includes(activeEl.tagName))) {
                     const { content } = msg.payload || {};
                     if (typeof content === 'string') {
                         editor.insertContent(content);
