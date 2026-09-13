@@ -15,7 +15,18 @@
       // Mark as initialized so we don't process it twice
       embed.setAttribute('data-initialized', 'true');
       
-      const height = embed.getAttribute('data-height') || '400';
+      // Determine height: First check data-height, then try to match Moodle textarea, finally fallback to 400
+      let height = embed.getAttribute('data-height');
+      if (!height) {
+        // Find the parent Moodle question container (usually .que or .formulation)
+        const questionContainer = embed.closest('.que, .formulation, form') || document;
+        const textarea = questionContainer.querySelector('textarea');
+        if (textarea && textarea.clientHeight > 100) {
+          height = textarea.clientHeight;
+        } else {
+          height = 400;
+        }
+      }
       
       // Build the standard lms-widget-container
       const container = document.createElement('div');
