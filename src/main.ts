@@ -14,6 +14,7 @@ let isLocked = false;
 const urlParams = new URLSearchParams(window.location.search);
 const isSyncEnabled = urlParams.get('sync') === 'true';
 const isSafeModeVisible = urlParams.get('safeMode') === 'true';
+const targetRows = parseInt(urlParams.get('rows') || '0', 10);
 
 if (isSyncEnabled) {
     syncStatus.style.display = 'inline-block';
@@ -118,7 +119,7 @@ if (isSyncEnabled) {
     window.parent.postMessage({ type: 'REQUEST_CONTENT' }, '*');
 }
 
-// --- SETTINGS UI ---
+// --- SETTINGS UI & PERSISTENCE ---
 const btnConfig = document.getElementById('btn-config') as HTMLButtonElement;
 const settingsModal = document.getElementById('settings-modal') as HTMLElement;
 const btnCloseSettings = document.getElementById('btn-close-settings') as HTMLButtonElement;
@@ -127,7 +128,56 @@ const btnFontInc = document.getElementById('btn-font-inc') as HTMLButtonElement;
 const btnFontDec = document.getElementById('btn-font-dec') as HTMLButtonElement;
 const fontSizeDisplay = document.getElementById('font-size-display') as HTMLElement;
 
+// 1. Theme Persistence
+function applyTheme(theme: string) {
+    document.body.className = '';
+    if (theme === 'light') {
+        document.body.classList.add('theme-light');
+    } else if (theme === 'hc') {
+        document.body.classList.add('theme-hc');
+    }
+    themeSelect.value = theme;
+}
+
+let savedTheme = 'dark';
+try {
+    savedTheme = localStorage.getItem('py_ide_theme') || 'dark';
+} catch (e) {
+    console.warn('Cannot read theme from localStorage:', e);
+}
+applyTheme(savedTheme);
+
+themeSelect.addEventListener('change', () => {
+    applyTheme(themeSelect.value);
+    try {
+        localStorage.setItem('py_ide_theme', themeSelect.value);
+    } catch (e) {
+        console.warn('Cannot save theme to localStorage:', e);
+    }
+});
+
+// 2. Font Size Persistence & Height Scaling
 let currentFontSize = 14;
+try {
+    const savedFontSize = parseInt(localStorage.getItem('py_ide_font_size') || '14', 10);
+    if (!isNaN(savedFontSize) && savedFontSize >= 10 && savedFontSize <= 32) {
+        currentFontSize = savedFontSize;
+    }
+} catch (e) {
+    console.warn('Cannot read font size from localStorage:', e);
+}
+
+function notifyHeightBasedOnRows() {
+    if (targetRows >= 3) {
+        // 40px toolbar + 35px panel header + 30px editor padding + (rows * lineHeight) + 10px buffer
+        const lineHeight = currentFontSize * 1.5;
+        const neededHeight = Math.round(40 + 35 + 30 + (targetRows * lineHeight) + 10);
+        window.parent.postMessage({
+            type: 'SYNC_HEIGHT',
+            payload: { height: neededHeight }
+        }, '*');
+    }
+}
 
 btnConfig.addEventListener('click', () => {
     settingsModal.style.display = 'flex';
@@ -143,18 +193,15 @@ settingsModal.addEventListener('click', (e) => {
     }
 });
 
-themeSelect.addEventListener('change', () => {
-    document.body.className = '';
-    if (themeSelect.value === 'light') {
-        document.body.classList.add('theme-light');
-    } else if (themeSelect.value === 'hc') {
-        document.body.classList.add('theme-hc');
-    }
-});
-
 function updateFontSize() {
     fontSizeDisplay.textContent = currentFontSize + 'px';
     document.documentElement.style.setProperty('--editor-font-size', currentFontSize + 'px');
+    try {
+        localStorage.setItem('py_ide_font_size', currentFontSize.toString());
+    } catch (e) {
+        console.warn('Cannot save font size to localStorage:', e);
+    }
+    notifyHeightBasedOnRows();
 }
 
 btnFontInc.addEventListener('click', () => {
@@ -172,3 +219,5 @@ btnFontDec.addEventListener('click', () => {
 });
 
 updateFontSize();
+// Notify initial height if rows parameter is set
+notifyHeightBasedOnRows();

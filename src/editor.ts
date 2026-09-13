@@ -367,12 +367,25 @@ export class Editor {
     const btnShowOutput = document.getElementById('btn-show-output') as HTMLButtonElement;
     
     let layoutMode = 0;
+    try {
+      const savedLayout = parseInt(localStorage.getItem('py_ide_layout') || '0', 10);
+      if (!isNaN(savedLayout) && savedLayout >= 0 && savedLayout <= 2) {
+        layoutMode = savedLayout;
+      }
+    } catch (e) {
+      console.warn('Cannot read layout from localStorage:', e);
+    }
     
     const toggleLayout = (forceMode = -1) => {
       if (forceMode !== -1) {
           layoutMode = forceMode;
       } else {
           layoutMode = (layoutMode + 1) % 3;
+      }
+      try {
+        localStorage.setItem('py_ide_layout', layoutMode.toString());
+      } catch (e) {
+        console.warn('Cannot save layout to localStorage:', e);
       }
 
       container.className = "container";
@@ -396,6 +409,9 @@ export class Editor {
           layoutIcon.innerText = "□";
       }
     };
+    
+    // Apply initial layout
+    toggleLayout(layoutMode);
     
     btnLayout.addEventListener('click', () => toggleLayout());
     btnHideOutput.addEventListener('click', () => toggleLayout(2));

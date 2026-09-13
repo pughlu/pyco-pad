@@ -96,12 +96,26 @@
       // Find the textarea in this question block (if any)
       const textarea = questionBlock.querySelector('textarea');
 
-      // Determine height: First check data-height, then try to match Moodle textarea, finally fallback to 400
       let height = embed.getAttribute('data-height');
+      let rows = 0;
       if (textarea) {
-        if (!height && textarea.clientHeight > 100) {
-          height = textarea.clientHeight;
+        // Read Moodle's configured rows (e.g. rows="10")
+        const attrRows = parseInt(textarea.getAttribute('rows') || '0', 10);
+        if (attrRows > 0) {
+          rows = attrRows;
+        } else if (textarea.clientHeight > 100) {
+          rows = Math.round(textarea.clientHeight / 20);
         }
+
+        if (!height) {
+          if (rows >= 3) {
+            // Default: 115px chrome (toolbar + panel header + padding) + rows * 21px line height
+            height = Math.max(300, 115 + Math.round(rows * 21));
+          } else if (textarea.clientHeight > 100) {
+            height = textarea.clientHeight + 80;
+          }
+        }
+
         // Immediately hide the textbox to prevent any flash/jump while the iframe is loading
         textarea.style.display = 'none';
         const answerBlock = textarea.closest('.answer');
@@ -122,12 +136,12 @@
       iframe.setAttribute('data-lms-widget', 'true');
       iframe.setAttribute('width', '100%');
       iframe.setAttribute('height', height);
-      //iframe.style.opacity = '0';
-      //iframe.style.transition = 'opacity 0.4s ease-in-out';
       iframe.style.background = '#1e1e1e'; // Match IDE dark theme so no bright white flash occurs
       iframe.style.border = '1px solid #333';
       iframe.style.borderRadius = '4px';
-      iframe.src = `${origin}/?sync=true`;
+      
+      const rowsParam = rows > 0 ? `&rows=${rows}` : '';
+      iframe.src = `${origin}/?sync=true${rowsParam}`;
 
       const showIframe = () => {
         iframe.style.opacity = '1';
@@ -141,6 +155,25 @@
       // Decorate pre elements only in this question block
       decoratePreTagsInBlock(questionBlock);
     });
+
+    // Listen for dynamic SYNC_HEIGHT requests (e.g., when font size changes)
+    if (!window.__pythonIdeHeightListenerAttached) {
+      window.__pythonIdeHeightListenerAttached = true;
+      window.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'SYNC_HEIGHT') {
+          const newHeight = e.data.payload?.height || e.data.height;
+          if (newHeight && typeof newHeight === 'number' && newHeight >= 200) {
+            const iframes = document.querySelectorAll('iframe[data-lms-widget]');
+            iframes.forEach(iframe => {
+              if (iframe.contentWindow === e.source) {
+                iframe.setAttribute('height', newHeight);
+                iframe.style.height = newHeight + 'px';
+              }
+            });
+          }
+        }
+      });
+    }
 
     // Inject the LMS Widget Manager if it isn't already on the page
     if (!window.LMSWidgetManager && !document.querySelector('script[src*="lms-widget-manager"]')) {
