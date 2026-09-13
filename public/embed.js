@@ -1,4 +1,4 @@
-(function() {
+(function () {
   function decoratePreTagsInBlock(questionBlock) {
     const preTags = questionBlock.querySelectorAll('pre:not(#notice pre):not(.debugging pre)');
 
@@ -45,22 +45,22 @@
 
         // 1. Unconditionally write to clipboard
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).catch(err => console.error("[Moodle Decorator] Clipboard failed:", err));
+          navigator.clipboard.writeText(text).catch(err => console.error("[Moodle Decorator] Clipboard failed:", err));
         }
 
         // 2. Attempt live insertion scoped to this question block
         if (activeEl && activeEl.tagName === 'IFRAME' && questionBlock.contains(activeEl)) {
-            console.log('[Moodle Decorator] Sending code to active iframe in this question block');
-            activeEl.contentWindow.postMessage({ type: 'INSERT_CONTENT', payload: { content: text } }, '*');
+          console.log('[Moodle Decorator] Sending code to active iframe in this question block');
+          activeEl.contentWindow.postMessage({ type: 'INSERT_CONTENT', payload: { content: text } }, '*');
         } else if (activeEl && (activeEl.isContentEditable || ['TEXTAREA', 'INPUT'].includes(activeEl.tagName)) && questionBlock.contains(activeEl)) {
-            console.log('[Moodle Decorator] Inserting code into active element in this question block');
-            if (activeEl.setRangeText) {
-                activeEl.setRangeText(text, activeEl.selectionStart, activeEl.selectionEnd, 'end');
-            } else if (document.execCommand) {
-                document.execCommand('insertText', false, text);
-            } else {
-                activeEl.value += text;
-            }
+          console.log('[Moodle Decorator] Inserting code into active element in this question block');
+          if (activeEl.setRangeText) {
+            activeEl.setRangeText(text, activeEl.selectionStart, activeEl.selectionEnd, 'end');
+          } else if (document.execCommand) {
+            document.execCommand('insertText', false, text);
+          } else {
+            activeEl.value += text;
+          }
         }
         // Visual feedback
         btn.textContent = 'Copied!';
@@ -79,17 +79,17 @@
   function initEmbeds() {
     // Find all placeholder divs that haven't been initialized yet
     const embeds = document.querySelectorAll('.python-ide-embed:not([data-initialized])');
-    
+
     // Get the base URL of where this embed.js script is hosted (e.g., https://python-web-ide.pwlewis.workers.dev)
     const currentScript = document.currentScript;
     let origin = 'https://python-web-ide.pwlewis.workers.dev'; // fallback
     if (currentScript && currentScript.src) {
       origin = new URL(currentScript.src).origin;
     }
-    
+
     embeds.forEach(embed => {
       embed.setAttribute('data-initialized', 'true');
-      
+
       // Find the parent Moodle question container (usually .que, .moodle-question, or .formulation)
       const questionBlock = embed.closest('.que, .moodle-question, .formulation, form') || embed.parentElement || document;
 
@@ -112,18 +112,18 @@
       if (!height) {
         height = 400;
       }
-      
+
       // Build the standard lms-widget-container
       const container = document.createElement('div');
       container.className = 'lms-widget-container';
-      
+
       // Build the iframe pointing to the IDE with sync enabled and smooth fade-in
       const iframe = document.createElement('iframe');
       iframe.setAttribute('data-lms-widget', 'true');
       iframe.setAttribute('width', '100%');
       iframe.setAttribute('height', height);
-      iframe.style.opacity = '0';
-      iframe.style.transition = 'opacity 0.4s ease-in-out';
+      //iframe.style.opacity = '0';
+      //iframe.style.transition = 'opacity 0.4s ease-in-out';
       iframe.style.background = '#1e1e1e'; // Match IDE dark theme so no bright white flash occurs
       iframe.style.border = '1px solid #333';
       iframe.style.borderRadius = '4px';
@@ -134,7 +134,7 @@
       };
       iframe.addEventListener('load', showIframe);
       setTimeout(showIframe, 1000); // safety fallback
-      
+
       container.appendChild(iframe);
       embed.appendChild(container);
 
@@ -144,10 +144,10 @@
 
     // Inject the LMS Widget Manager if it isn't already on the page
     if (!window.LMSWidgetManager && !document.querySelector('script[src*="lms-widget-manager"]')) {
-       const managerScript = document.createElement('script');
-       managerScript.type = 'module';
-       managerScript.src = 'https://python-web-ide.pages.dev/lms-widget-manager.es.js';
-       document.head.appendChild(managerScript);
+      const managerScript = document.createElement('script');
+      managerScript.type = 'module';
+      managerScript.src = 'https://python-web-ide.pages.dev/lms-widget-manager.es.js';
+      document.head.appendChild(managerScript);
     }
   }
 
