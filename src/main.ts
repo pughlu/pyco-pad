@@ -63,7 +63,6 @@ if (isSyncEnabled) {
                 } else {
                     syncStatus.textContent = 'Ready';
                 }
-                notifyHeight();
                 break;
             }
 
@@ -106,21 +105,9 @@ if (isSyncEnabled) {
                 payload: { content: editor.getValue(), msgId }
             }, '*');
         }, 200);
-        notifyHeight();
     }
 
     document.getElementById('editing')?.addEventListener('input', triggerSync);
-
-    // 3. Dynamic Height Sync
-    function notifyHeight() {
-        const height = document.documentElement.scrollHeight;
-        window.parent.postMessage({
-            type: 'SYNC_HEIGHT',
-            payload: { height }
-        }, '*');
-    }
-
-    window.addEventListener('resize', notifyHeight);
 
     // 4. Request content once ready
     window.parent.postMessage({ type: 'REQUEST_CONTENT' }, '*');
