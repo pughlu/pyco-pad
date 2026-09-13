@@ -25,29 +25,32 @@
       // and pins it to the bottom-right corner for multi-liners. Using em units ensures it scales with Moodle's text zoom.
       btn.style.cssText = 'position: absolute; right: 0.5em; bottom: 0.5em; z-index: 10; user-select: none; cursor: pointer; background: #0e639c; color: white; padding: 0.4em 1em; border-radius: 0.3em; font-family: sans-serif; font-size: 0.85em; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: background 0.2s;';
 
+      // Prevent focus loss when clicking the button
+      btn.addEventListener('mousedown', (e) => e.preventDefault());
+
       btn.addEventListener('click', () => {
         const text = pre.innerText + '\n';
+        const activeEl = document.activeElement;
 
-        // Strategy 1: Dispatch decoupled event for LMSWidgetManager
-        console.log('[Moodle Decorator] Dispatching lms-widget:insert-content event');
-        document.dispatchEvent(new CustomEvent('lms-widget:insert-content', {
-          detail: { content: text }
-        }));
-        /*
-        // Strategy 2: Fallback to directly posting to the iframe if manager is not present
-        if (!window.LMSWidgetManager) {
-          const iframes = document.querySelectorAll('iframe');
-          if (iframes.length > 0) {
-            console.log('[Moodle Decorator] LMSWidgetManager not found. Falling back to direct iframe postMessage');
-            iframes[0].contentWindow.postMessage({
-              type: 'INSERT_CONTENT',
-              payload: { content: text }
-            }, '*');
-          } else {
-            console.warn('[Moodle Decorator] Failed to copy: No target iframe found.');
-          }
+        // 1. Unconditionally write to clipboard
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).catch(err => console.error("[Moodle Decorator] Clipboard failed:", err));
         }
-        */
+
+        // 2. Attempt live insertion
+        if (activeEl && activeEl.tagName === 'IFRAME') {
+            console.log('[Moodle Decorator] Sending code to active iframe');
+            activeEl.contentWindow.postMessage({ type: 'INSERT_CONTENT', payload: { content: text } }, '*');
+        } else if (activeEl && (activeEl.isContentEditable || ['TEXTAREA', 'INPUT'].includes(activeEl.tagName))) {
+            console.log('[Moodle Decorator] Inserting code into active element');
+            if (activeEl.setRangeText) {
+                activeEl.setRangeText(text, activeEl.selectionStart, activeEl.selectionEnd, 'end');
+            } else if (document.execCommand) {
+                document.execCommand('insertText', false, text);
+            } else {
+                activeEl.value += text;
+            }
+        }
         // Visual feedback
         const oldText = btn.textContent;
         btn.textContent = 'Copied!';

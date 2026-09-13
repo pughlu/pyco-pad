@@ -75,9 +75,14 @@ if (isSyncEnabled) {
 
             case 'INSERT_CONTENT': {
                 if (isLocked || editor.isReadOnly) return;
-                const { content } = msg.payload || {};
-                if (typeof content === 'string') {
-                    editor.insertContent(content);
+                
+                // Only insert if the user is actively focused on an editor
+                const activeEl = document.activeElement;
+                if (activeEl && (activeEl.isContentEditable || ['TEXTAREA', 'INPUT'].includes(activeEl.tagName))) {
+                    const { content } = msg.payload || {};
+                    if (typeof content === 'string') {
+                        editor.insertContent(content);
+                    }
                 }
                 break;
             }
