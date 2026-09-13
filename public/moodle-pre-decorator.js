@@ -56,7 +56,7 @@
           btn.textContent = oldText;
           btn.style.background = '#0e639c';
         }, 1500);
-        */
+
       });
 
       // Insert button inside the wrapper, overlapping the <pre>
