@@ -93,7 +93,7 @@
       // Find the parent Moodle question container (usually .que, .moodle-question, or .formulation)
       const questionBlock = embed.closest('.que, .moodle-question, .formulation, form') || embed.parentElement || document;
 
-      // Find the textarea in this question block (if any)
+      // 1. Find the textarea in this question block (if any), measure, and hide it first
       const textarea = questionBlock.querySelector('textarea');
 
       let height = embed.getAttribute('data-height');
@@ -116,7 +116,7 @@
           }
         }
 
-        // Immediately hide the textbox to prevent any flash/jump while the iframe is loading
+        // Hide the textbox immediately before the iframe is ever added to the DOM
         textarea.style.display = 'none';
         const answerBlock = textarea.closest('.answer');
         if (answerBlock) {
@@ -127,15 +127,14 @@
         height = 400;
       }
 
-      // Build the standard lms-widget-container
-      const container = document.createElement('div');
-      container.className = 'lms-widget-container';
-
-      // Build the iframe pointing to the IDE with sync enabled and smooth fade-in
+      // 2. Build the iframe with its exact height and smooth transition set upfront
       const iframe = document.createElement('iframe');
       iframe.setAttribute('data-lms-widget', 'true');
       iframe.setAttribute('width', '100%');
       iframe.setAttribute('height', height);
+      iframe.style.width = '100%';
+      iframe.style.height = height + 'px';
+      iframe.style.transition = 'height 0.2s ease-out';
       iframe.style.background = '#1e1e1e'; // Match IDE dark theme so no bright white flash occurs
       iframe.style.border = '1px solid #333';
       iframe.style.borderRadius = '4px';
@@ -143,12 +142,9 @@
       const rowsParam = rows > 0 ? `&rows=${rows}` : '';
       iframe.src = `${origin}/?sync=true${rowsParam}`;
 
-      const showIframe = () => {
-        iframe.style.opacity = '1';
-      };
-      iframe.addEventListener('load', showIframe);
-      setTimeout(showIframe, 1000); // safety fallback
-
+      // 3. Now attach container and iframe after the textbox has been hidden
+      const container = document.createElement('div');
+      container.className = 'lms-widget-container';
       container.appendChild(iframe);
       embed.appendChild(container);
 
