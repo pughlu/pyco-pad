@@ -21,19 +21,21 @@
       // Create a button wrapper
       const btn = document.createElement('div');
       btn.textContent = 'Copy to Editor';
-      // bottom: 10px nicely centers it vertically if it's a 1-liner with standard 10px padding, 
-      // and pins it to the bottom-right corner for multi-liners.
-      btn.style.cssText = 'position: absolute; right: 10px; bottom: 10px; z-index: 10; user-select: none; cursor: pointer; background: #0e639c; color: white; padding: 4px 12px; border-radius: 4px; font-family: sans-serif; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: background 0.2s;';
+      // bottom: 0.5em nicely centers it vertically if it's a 1-liner with standard padding, 
+      // and pins it to the bottom-right corner for multi-liners. Using em units ensures it scales with Moodle's text zoom.
+      btn.style.cssText = 'position: absolute; right: 0.5em; bottom: 0.5em; z-index: 10; user-select: none; cursor: pointer; background: #0e639c; color: white; padding: 0.4em 1em; border-radius: 0.3em; font-family: sans-serif; font-size: 0.85em; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: background 0.2s;';
 
       btn.addEventListener('click', () => {
         const text = pre.innerText + '\n';
 
-        // Strategy 1: Use lms-widget-manager if it exists and is active
-        if (window.LMSWidgetManager && window.LMSWidgetManager.activeControllers && window.LMSWidgetManager.activeControllers.length > 0) {
-          console.log('[Moodle Decorator] Sending code via LMSWidgetManager');
-          window.LMSWidgetManager.activeControllers[0].insertContent(text);
-        } else {
-          // Strategy 2: Fallback to directly posting to the iframe if manager is not exposing it
+        // Strategy 1: Dispatch decoupled event for LMSWidgetManager
+        console.log('[Moodle Decorator] Dispatching lms-widget:insert-content event');
+        document.dispatchEvent(new CustomEvent('lms-widget:insert-content', {
+          detail: { content: text }
+        }));
+
+        // Strategy 2: Fallback to directly posting to the iframe if manager is not present
+        if (!window.LMSWidgetManager) {
           const iframes = document.querySelectorAll('iframe');
           if (iframes.length > 0) {
             console.log('[Moodle Decorator] LMSWidgetManager not found. Falling back to direct iframe postMessage');
@@ -42,7 +44,7 @@
               payload: { content: text }
             }, '*');
           } else {
-            console.warn('[Moodle Decorator] Failed to copy: No target iframe or LMSWidgetManager found.');
+            console.warn('[Moodle Decorator] Failed to copy: No target iframe found.');
           }
         }
 
