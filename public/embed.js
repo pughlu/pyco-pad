@@ -93,27 +93,47 @@
       // Find the parent Moodle question container (usually .que, .moodle-question, or .formulation)
       const questionBlock = embed.closest('.que, .moodle-question, .formulation, form') || embed.parentElement || document;
 
+      // Find the textarea in this question block (if any)
+      const textarea = questionBlock.querySelector('textarea');
+
       // Determine height: First check data-height, then try to match Moodle textarea, finally fallback to 400
       let height = embed.getAttribute('data-height');
-      if (!height) {
-        const textarea = questionBlock.querySelector('textarea');
-        if (textarea && textarea.clientHeight > 100) {
+      if (textarea) {
+        if (!height && textarea.clientHeight > 100) {
           height = textarea.clientHeight;
-        } else {
-          height = 400;
         }
+        // Immediately hide the textbox to prevent any flash/jump while the iframe is loading
+        textarea.style.display = 'none';
+        const answerBlock = textarea.closest('.answer');
+        if (answerBlock) {
+          answerBlock.style.display = 'none';
+        }
+      }
+      if (!height) {
+        height = 400;
       }
       
       // Build the standard lms-widget-container
       const container = document.createElement('div');
       container.className = 'lms-widget-container';
       
-      // Build the iframe pointing to the IDE with sync enabled
+      // Build the iframe pointing to the IDE with sync enabled and smooth fade-in
       const iframe = document.createElement('iframe');
       iframe.setAttribute('data-lms-widget', 'true');
       iframe.setAttribute('width', '100%');
       iframe.setAttribute('height', height);
+      iframe.style.opacity = '0';
+      iframe.style.transition = 'opacity 0.4s ease-in-out';
+      iframe.style.background = '#1e1e1e'; // Match IDE dark theme so no bright white flash occurs
+      iframe.style.border = '1px solid #333';
+      iframe.style.borderRadius = '4px';
       iframe.src = `${origin}/?sync=true`;
+
+      const showIframe = () => {
+        iframe.style.opacity = '1';
+      };
+      iframe.addEventListener('load', showIframe);
+      setTimeout(showIframe, 1000); // safety fallback
       
       container.appendChild(iframe);
       embed.appendChild(container);
