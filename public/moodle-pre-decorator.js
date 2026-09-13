@@ -1,7 +1,7 @@
 (function () {
   document.addEventListener('DOMContentLoaded', () => {
-    // Find all <pre> tags (you can narrow this to .qtext pre if needed)
-    const preTags = document.querySelectorAll('pre');
+    // Find all <pre> tags inside Moodle question text blocks to avoid decorating random system pre tags
+    const preTags = document.querySelectorAll('.qtext pre, .formulation pre');
 
     preTags.forEach(pre => {
       // Create a wrapper to safely absolute-position the button over the pre (even if it scrolls)
