@@ -1,7 +1,7 @@
 import './style.css';
 import { Editor } from './editor';
 import { SkulptRunner } from './skulpt-runner';
-import type { HostMessage, IWidgetConfig } from './types';
+import type { HostMessage } from './types';
 
 const editor = new Editor();
 const runner = new SkulptRunner();
