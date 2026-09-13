@@ -7,17 +7,17 @@
       // Create a wrapper to safely absolute-position the button over the pre (even if it scrolls)
       const wrapper = document.createElement('div');
       wrapper.style.position = 'relative';
-      
+
       // Copy margins so layout doesn't break
       const style = window.getComputedStyle(pre);
       wrapper.style.marginTop = style.marginTop;
       wrapper.style.marginBottom = style.marginBottom;
       pre.style.marginTop = '0';
       pre.style.marginBottom = '0';
-      
+
       pre.parentNode.insertBefore(wrapper, pre);
       wrapper.appendChild(pre);
-      
+
       // Create a button wrapper
       const btn = document.createElement('div');
       btn.textContent = 'Copy to Editor';
@@ -33,7 +33,7 @@
         document.dispatchEvent(new CustomEvent('lms-widget:insert-content', {
           detail: { content: text }
         }));
-
+        /*
         // Strategy 2: Fallback to directly posting to the iframe if manager is not present
         if (!window.LMSWidgetManager) {
           const iframes = document.querySelectorAll('iframe');
@@ -47,7 +47,7 @@
             console.warn('[Moodle Decorator] Failed to copy: No target iframe found.');
           }
         }
-
+        */
         // Visual feedback
         const oldText = btn.textContent;
         btn.textContent = 'Copied!';
@@ -56,8 +56,9 @@
           btn.textContent = oldText;
           btn.style.background = '#0e639c';
         }, 1500);
+        */
       });
-      
+
       // Insert button inside the wrapper, overlapping the <pre>
       wrapper.appendChild(btn);
     });
