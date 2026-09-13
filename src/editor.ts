@@ -4,6 +4,8 @@ export class Editor {
   private highlightingContent: HTMLElement;
   private lineNumbers: HTMLElement;
   private currentLineCount: number = 0;
+  private pendingHighlightText: string | null = null;
+  private rafHighlightId: number | null = null;
   
   constructor() {
     this.editing = document.getElementById('editing') as HTMLTextAreaElement;
@@ -35,7 +37,7 @@ export class Editor {
   
   public setValue(text: string) {
     this.editing.value = text;
-    this.updateView(text);
+    this.updateView(text, true);
   }
   
   public setReadOnly(readOnly: boolean) {
@@ -59,16 +61,38 @@ export class Editor {
     this.editing.selectionStart = this.editing.selectionEnd = start + content.length;
     this.editing.focus();
     
-    this.updateView(this.editing.value);
+    this.updateView(this.editing.value, true);
     this.editing.dispatchEvent(new Event('input', { bubbles: true }));
   }
   
-  private updateView(text: string) {
-    let result_text = text;
-    if (text[text.length - 1] === '\n') result_text += ' ';
-    
-    this.highlightingContent.innerHTML = this.highlightPython(result_text);
+  private updateView(text: string, immediate: boolean = false) {
     this.updateLineNumbers(text);
+    
+    if (immediate) {
+      if (this.rafHighlightId !== null) {
+        cancelAnimationFrame(this.rafHighlightId);
+        this.rafHighlightId = null;
+      }
+      this.pendingHighlightText = null;
+      let result_text = text;
+      if (text[text.length - 1] === '\n') result_text += ' ';
+      this.highlightingContent.innerHTML = this.highlightPython(result_text);
+      this.syncScroll();
+      return;
+    }
+
+    this.pendingHighlightText = text;
+    if (this.rafHighlightId === null) {
+      this.rafHighlightId = requestAnimationFrame(() => {
+        this.rafHighlightId = null;
+        const currentText = this.pendingHighlightText ?? this.editing.value;
+        this.pendingHighlightText = null;
+        let result_text = currentText;
+        if (currentText[currentText.length - 1] === '\n') result_text += ' ';
+        this.highlightingContent.innerHTML = this.highlightPython(result_text);
+        this.syncScroll();
+      });
+    }
   }
   
   private syncScroll() {
@@ -80,7 +104,11 @@ export class Editor {
   private updateLineNumbers(text: string) {
     const lines = text.split('\n').length;
     if (lines !== this.currentLineCount) {
-      this.lineNumbers.innerHTML = Array(lines).fill(0).map((_, i) => i + 1).join('<br>');
+      let nums = '';
+      for (let i = 1; i <= lines; i++) {
+        nums += i + '\n';
+      }
+      this.lineNumbers.textContent = nums;
       this.currentLineCount = lines;
     }
   }
@@ -241,9 +269,9 @@ export class Editor {
         const insertion = "\n" + nextIndent;
         this.insertTextAtCursor(insertion);
 
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             this.syncScroll();
-        }, 0);
+        });
     }
   }
 
