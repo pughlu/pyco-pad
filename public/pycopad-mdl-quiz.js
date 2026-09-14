@@ -12,7 +12,7 @@
   window.PYTHON_IDE_STRINGS = window.PYTHON_IDE_STRINGS || {
     useCodeBtn: 'Use',
     switchToTextEditorBtn: 'Switch to Text Editor',
-    switchToIdeBtn: 'Switch to Python Code Editor',
+    switchToIdeBtn: 'Switch to Code Pad',
     dragToResizeTitle: 'Drag to resize editor',
   };
 
@@ -188,13 +188,13 @@
 
       let embed = target;
       let starterCode = '';
-      
+
       if (target.tagName.toLowerCase() === 'pyco-pad') {
         starterCode = target.textContent.trim();
         embed = document.createElement('div');
         embed.className = 'python-ide-embed';
         embed.setAttribute('data-initialized', 'true');
-        
+
         Array.from(target.attributes).forEach(attr => {
           if (attr.name !== 'data-initialized') embed.setAttribute(attr.name, attr.value);
         });
