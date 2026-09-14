@@ -174,6 +174,18 @@
       window.addEventListener('pointermove', onPointerMove);
       window.addEventListener('pointerup', onPointerUp);
     });
+
+      // Ensure LMSWidgetManager binds to this newly created container and iframe
+      if (window.LMSWidgetManager && typeof window.LMSWidgetManager.bootstrap === 'function') {
+        window.LMSWidgetManager.bootstrap();
+      } else {
+        import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
+          .then(m => {
+            window.LMSWidgetManager = m;
+            m.bootstrap();
+          })
+          .catch(err => console.error('[Embed] Error loading LMSWidgetManager:', err));
+      }
   }
 
 
@@ -319,40 +331,20 @@
               }
             });
           }
-        } else if (e.data && e.data.type === 'SYNC_CONTENT') {
-          const iframes = document.querySelectorAll('iframe[data-lms-widget]');
-          iframes.forEach(iframe => {
-            if (iframe.contentWindow === e.source) {
-              const questionBlock = iframe.closest('.que, .moodle-question, .formulation, form') || document;
-              const textarea = questionBlock.querySelector('textarea');
-              if (textarea) {
-                const content = typeof e.data.payload === 'string' ? e.data.payload : e.data.payload?.content;
-                if (typeof content === 'string') {
-                  textarea.value = content;
-                  try {
-                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                    textarea.dispatchEvent(new Event('change', { bubbles: true }));
-                  } catch (err) {}
-                }
-                try {
-                  iframe.contentWindow.postMessage({
-                    type: 'SYNC_ACK',
-                    msgId: e.data.msgId || e.data.payload?.msgId,
-                    payload: { success: true }
-                  }, '*');
-                } catch (err) {}
-              }
-            }
-          });
         }
       });
     }
 
-    if (!window.LMSWidgetManager && !document.querySelector('script[src*="lms-widget-manager"]')) {
-      const managerScript = document.createElement('script');
-      managerScript.type = 'module';
-      managerScript.src = 'https://python-web-ide.pages.dev/lms-widget-manager.es.js';
-      document.head.appendChild(managerScript);
+    // Load and bootstrap LMSWidgetManager
+    if (window.LMSWidgetManager && typeof window.LMSWidgetManager.bootstrap === 'function') {
+      window.LMSWidgetManager.bootstrap();
+    } else {
+      import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
+        .then(m => {
+          window.LMSWidgetManager = m;
+          m.bootstrap();
+        })
+        .catch(err => console.error('[Embed] Error loading LMSWidgetManager:', err));
     }
   }
 

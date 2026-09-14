@@ -163,6 +163,18 @@
       iframe.src = `${origin}/?sync=true${rowsParam}`;
       container.appendChild(iframe);
 
+      // Ensure LMSWidgetManager binds to this newly created container and iframe
+      if (window.LMSWidgetManager && typeof window.LMSWidgetManager.bootstrap === 'function') {
+        window.LMSWidgetManager.bootstrap();
+      } else {
+        import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
+          .then(m => {
+            window.LMSWidgetManager = m;
+            m.bootstrap();
+          })
+          .catch(err => console.error('[LmsTogglePlugin] Error loading LMSWidgetManager:', err));
+      }
+
       function updateView(animate = true) {
         if (!animate) {
           textarea.style.transition = 'none';
@@ -265,24 +277,6 @@
           if (e.data.type === 'SYNC_HEIGHT') {
             const h = e.data.payload?.height || e.data.height;
             if (h) handleNewIframeHeight(h);
-          } else if (e.data.type === 'SYNC_CONTENT') {
-            const content = typeof e.data.payload === 'string' 
-              ? e.data.payload 
-              : e.data.payload?.content;
-            if (typeof content === 'string') {
-              textarea.value = content;
-              try {
-                textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                textarea.dispatchEvent(new Event('change', { bubbles: true }));
-              } catch (err) {}
-            }
-            try {
-              iframe.contentWindow.postMessage({
-                type: 'SYNC_ACK',
-                msgId: e.data.msgId || e.data.payload?.msgId,
-                payload: { success: true }
-              }, '*');
-            } catch (err) {}
           }
         }
       };
