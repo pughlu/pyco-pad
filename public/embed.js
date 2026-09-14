@@ -105,158 +105,7 @@
     container.appendChild(iframe);
   }
 
-  // Strategy 2: Toggle Overlay Strategy
-  function applyToggleOverlay(embed, textarea, height, rows, origin, widgetBg) {
-    if (!textarea) return applyDefaultSwap(embed, null, height, rows, origin, widgetBg);
 
-    // Save dimensions
-    const originalTextareaHeight = textarea.clientHeight;
-    
-    // Create UI container
-    const uiWrapper = document.createElement('div');
-    uiWrapper.className = 'lms-toggle-wrapper';
-    uiWrapper.style.position = 'relative';
-    uiWrapper.style.width = '100%';
-    uiWrapper.style.transition = 'height 0.2s ease-out';
-    
-    // Toggle button (position absolute above the wrapper, or just static before it)
-    const toggleBtn = document.createElement('button');
-    toggleBtn.type = 'button';
-    toggleBtn.textContent = 'Switch to Raw Text';
-    // We will place it top right, above the widget
-    toggleBtn.style.cssText = 'position: absolute; right: 0; top: -30px; padding: 4px 10px; font-size: 12px; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9; color: #333; z-index: 10; transition: background 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1);';
-    
-    // Container for the iframe (LMSWidgetManager requires this specific class)
-    const container = document.createElement('div');
-    container.className = 'lms-widget-container';
-    container.style.position = 'absolute';
-    container.style.top = '0';
-    container.style.left = '0';
-    container.style.width = '100%';
-    container.style.height = '100%';
-    container.style.transition = 'opacity 0.2s ease-out';
-    
-    // Move into wrapper
-    const textareaParent = textarea.parentNode;
-    textareaParent.insertBefore(uiWrapper, textarea);
-    uiWrapper.appendChild(toggleBtn);
-    
-    // Textarea must be sibling to container inside the wrapper
-    uiWrapper.appendChild(textarea);
-    uiWrapper.appendChild(container);
-    
-    // Reset textarea styles to fill wrapper perfectly
-    textarea.style.position = 'absolute';
-    textarea.style.top = '0';
-    textarea.style.left = '0';
-    textarea.style.width = '100%';
-    textarea.style.height = '100%';
-    textarea.style.boxSizing = 'border-box';
-    textarea.style.margin = '0';
-    textarea.style.transition = 'opacity 0.2s ease-out';
-
-    // Prepare Iframe
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('data-lms-widget', 'true');
-    iframe.setAttribute('width', '100%');
-    iframe.setAttribute('height', height || 400);
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
-    iframe.style.outline = 'none';
-    iframe.style.borderRadius = '4px';
-    iframe.style.background = widgetBg;
-    iframe.style.position = 'absolute';
-    iframe.style.top = '0';
-    iframe.style.left = '0';
-    iframe.style.transition = 'opacity 0.2s ease-out';
-    
-    const rowsParam = rows > 0 ? `&rows=${rows}` : '';
-    iframe.src = `${origin}/?sync=true${rowsParam}`;
-    container.appendChild(iframe);
-
-    // Toggle State Management
-    let viewMode = 'iframe'; // default
-    try {
-      viewMode = localStorage.getItem('py_ide_view_mode') || 'iframe';
-    } catch (e) {}
-
-    let iframeHeight = height || 400; // Track the height the iframe WANTS to be
-
-    function updateView(animate = true) {
-      if (!animate) {
-        textarea.style.transition = 'none';
-        iframe.style.transition = 'none';
-        container.style.transition = 'none';
-      } else {
-        textarea.style.transition = 'opacity 0.2s ease-out';
-        iframe.style.transition = 'opacity 0.2s ease-out';
-        container.style.transition = 'height 0.2s ease-out';
-      }
-
-      // Force a reflow if we removed transitions
-      if (!animate) void container.offsetHeight;
-
-      if (viewMode === 'iframe') {
-        toggleBtn.textContent = 'Switch to Raw Text';
-        textarea.style.opacity = '0';
-        textarea.style.pointerEvents = 'none';
-        textarea.style.zIndex = '1';
-        
-        iframe.style.opacity = '1';
-        iframe.style.pointerEvents = 'auto';
-        iframe.style.zIndex = '2';
-        
-        container.style.height = iframeHeight + 'px';
-      } else {
-        toggleBtn.textContent = 'Switch to IDE';
-        iframe.style.opacity = '0';
-        iframe.style.pointerEvents = 'none';
-        iframe.style.zIndex = '1';
-        
-        textarea.style.opacity = '1';
-        textarea.style.pointerEvents = 'auto';
-        textarea.style.zIndex = '2';
-        
-        // Textarea mode uses original textarea height
-        container.style.height = originalTextareaHeight + 'px';
-      }
-    }
-
-    // Set initial state without animation (but wait for iframe load to reveal it)
-    // Actually, initially, let's keep the iframe invisible until loaded
-    iframe.style.opacity = '0';
-    textarea.style.opacity = '1'; // Show textarea while loading
-    container.style.height = originalTextareaHeight + 'px';
-
-    iframe.addEventListener('load', () => {
-      // Once loaded, snap to preferred view state
-      updateView(true);
-    });
-
-    toggleBtn.addEventListener('click', () => {
-      viewMode = viewMode === 'iframe' ? 'textarea' : 'iframe';
-      try {
-        localStorage.setItem('py_ide_view_mode', viewMode);
-      } catch (e) {}
-      updateView(true);
-    });
-
-    // We also need to listen for SYNC_HEIGHT specifically for this container
-    // The global listener will update iframe attribute, but we need to update container height if in iframe mode.
-    iframe.addEventListener('load', () => {
-        // Just in case height changes
-        iframe.setAttribute('data-lms-toggle-instance', 'true');
-    });
-
-    // Provide a localized height updater callback attached to the iframe so the global listener can trigger it
-    iframe.__updateToggleHeight = (newHeight) => {
-        iframeHeight = newHeight;
-        if (viewMode === 'iframe') {
-            container.style.height = iframeHeight + 'px';
-        }
-    };
-  }
 
   // --- MAIN INIT ---
 
@@ -309,13 +158,28 @@
       } catch (e) {}
       const widgetBg = savedTheme === 'light' ? '#ffffff' : '#1e1e1e';
 
-      // Decide strategy based on configuration (for now, default to toggle strategy)
-      // A script attribute could configure this: <script src="..." data-strategy="toggle">
+      // Config reading
       let strategy = currentScript ? currentScript.getAttribute('data-strategy') : 'toggle';
-      if (!strategy) strategy = 'toggle'; // Default to the new toggle plugin
+      if (!strategy) strategy = 'toggle';
+
+      let autoload = false;
+      if (currentScript && currentScript.getAttribute('data-autoload') === 'true') {
+        autoload = true;
+      }
 
       if (strategy === 'toggle') {
-        applyToggleOverlay(embed, textarea, height, rows, origin, widgetBg);
+        // We load the plugin if not loaded
+        if (!window.LmsTogglePlugin) {
+          const pluginScript = document.createElement('script');
+          pluginScript.src = `${origin}/lms-toggle-plugin.js`;
+          document.head.appendChild(pluginScript);
+          
+          pluginScript.onload = () => {
+            window.LmsTogglePlugin.applyToggleOverlay(embed, textarea, height, rows, origin, widgetBg, autoload);
+          };
+        } else {
+          window.LmsTogglePlugin.applyToggleOverlay(embed, textarea, height, rows, origin, widgetBg, autoload);
+        }
       } else {
         applyDefaultSwap(embed, textarea, height, rows, origin, widgetBg);
       }
