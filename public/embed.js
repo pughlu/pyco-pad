@@ -117,9 +117,9 @@
       if (textarea) {
         const attrRows = parseInt(textarea.getAttribute('rows') || '0', 10);
         if (attrRows > 0) {
-          rows = attrRows;
+          rows = Math.max(1, attrRows - 2);
         } else if (textarea.clientHeight > 100) {
-          rows = Math.round(textarea.clientHeight / 20);
+          rows = Math.max(1, Math.round(textarea.clientHeight / 20) - 2);
         }
 
         if (!height) {
@@ -170,7 +170,7 @@
       placeholder.style.position = 'absolute';
       placeholder.style.top = '0';
       placeholder.style.left = '0';
-      placeholder.style.zIndex = '1';
+      placeholder.style.zIndex = '2';
       container.appendChild(placeholder);
 
       // Trigger 1-second fade in for the placeholder
@@ -195,28 +195,28 @@
       iframe.style.border = '1px solid #333';
       iframe.style.borderRadius = '4px';
       iframe.style.background = '#1e1e1e';
-      iframe.style.opacity = '0';
+      iframe.style.opacity = '1';
       iframe.style.position = 'absolute';
       iframe.style.top = '0';
       iframe.style.left = '0';
-      iframe.style.zIndex = '2';
+      iframe.style.zIndex = '1';
       iframe.style.pointerEvents = 'none';
-      iframe.style.transition = 'opacity 1s ease-in-out';
 
       const rowsParam = rows > 0 ? `&rows=${rows}` : '';
       iframe.src = `${origin}/?sync=true${rowsParam}`;
 
       container.appendChild(iframe);
 
-      // Step 5: The iframe fades in directly OVER the placeholder
+      // Step 5: The placeholder fades out to reveal the iframe behind it
       let swapped = false;
       const swapForPlaceholder = () => {
         if (swapped) return;
         swapped = true;
-        console.log('[Embed] Iframe ready. Fading in iframe OVER the placeholder...');
-        // Keep the placeholder solid (opacity 1) underneath so there is never a blank gap
-        // The iframe (z-index: 2) fades in smoothly right on top of it:
-        iframe.style.opacity = '1';
+        console.log('[Embed] Iframe ready. Fading out placeholder to reveal iframe...');
+        
+        // The iframe is behind (z-index: 1) and already opaque.
+        // We fade out the placeholder (z-index: 2).
+        placeholder.style.opacity = '0';
         iframe.style.pointerEvents = 'auto';
 
         // Remove the placeholder only after the iframe is 100% visible and opaque
