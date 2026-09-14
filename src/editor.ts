@@ -220,8 +220,9 @@ export class Editor {
         }
     }
     else if (e.key === "Enter") {
-        if (e.ctrlKey || e.metaKey) {
-            // handled by main runCode listener
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            document.getElementById('btn-run')?.click();
             return;
         }
         e.preventDefault();
