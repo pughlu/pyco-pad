@@ -40,7 +40,7 @@
       // Toggle button
       const toggleBtn = document.createElement('button');
       toggleBtn.type = 'button';
-      toggleBtn.textContent = targetMode === 'iframe' ? 'Switch to Text Editor' : 'Switch to Python Code Editor';
+      toggleBtn.textContent = targetMode === 'iframe' ? window.PYTHON_IDE_STRINGS.switchToTextEditorBtn : window.PYTHON_IDE_STRINGS.switchToIdeBtn;
       toggleBtn.disabled = true;
       toggleBtn.style.cssText = 'position: absolute; right: 0; top: -36px; padding: 5px 12px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9; color: #333; z-index: 20; transition: background 0.2s, opacity 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: block;';
       placeholder.appendChild(toggleBtn);
@@ -48,7 +48,7 @@
       // Resize Handle (Lower RHS, textarea style)
       const resizeHandle = document.createElement('div');
       resizeHandle.className = 'lms-widget-resize-handle';
-      resizeHandle.title = 'Drag to resize editor';
+      resizeHandle.title = window.PYTHON_IDE_STRINGS.dragToResizeTitle || 'Drag to resize editor';
       resizeHandle.style.cssText = 'position: absolute; right: 2px; bottom: 2px; width: 16px; height: 16px; cursor: se-resize; z-index: 25; display: none; opacity: 0.5; transition: opacity 0.2s; user-select: none; touch-action: none;';
       resizeHandle.innerHTML = `
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block; pointer-events: none;">
@@ -202,7 +202,7 @@
         toggleBtn.disabled = !isIframeReady;
 
         if (viewMode === 'iframe') {
-          toggleBtn.textContent = 'Switch to Text Editor';
+          toggleBtn.textContent = window.PYTHON_IDE_STRINGS.switchToTextEditorBtn;
           resizeHandle.style.display = 'block';
           
           // Hide textarea
@@ -219,7 +219,7 @@
           placeholder.style.height = iframeHeight + 'px';
           placeholder.style.background = 'transparent';
         } else {
-          toggleBtn.textContent = 'Switch to Python Code Editor';
+          toggleBtn.textContent = window.PYTHON_IDE_STRINGS.switchToIdeBtn;
           resizeHandle.style.display = 'none';
           
           // Hide iframe

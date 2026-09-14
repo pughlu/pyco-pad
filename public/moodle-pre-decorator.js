@@ -25,8 +25,8 @@
       // Create a button wrapper
       const btn = document.createElement('div');
       btn.textContent = 'Use';
-      // Compact size with font-size & padding relative to pre font size, preventing overflow when zoomed out
-      btn.style.cssText = 'position: absolute; right: 0.4em; bottom: 0.4em; z-index: 10; user-select: none; cursor: pointer; background: #0e639c; color: white; padding: 0.2em 0.6em; border-radius: 0.25em; font-family: sans-serif; font-size: 0.75em; line-height: 1.2; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: background 0.2s;';
+      // Consistent sizing that won't shrink if the pre font-size is small
+      btn.style.cssText = 'position: absolute; right: 8px; bottom: 8px; z-index: 10; user-select: none; cursor: pointer; background: #0e639c; color: white; padding: 5px 12px; border-radius: 4px; font-family: sans-serif; font-size: 13px; line-height: 1.2; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: background 0.2s;';
 
       // Hover feedback
       btn.addEventListener('mouseenter', () => {

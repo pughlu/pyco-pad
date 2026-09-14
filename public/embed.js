@@ -1,11 +1,20 @@
 (function () {
   const currentScript = document.currentScript;
-  let defaultOrigin = 'https://python-web-ide.pages.dev';
+  let defaultOrigin = 'https://python-web-ide.pwlewis.pages.dev';
   if (currentScript && currentScript.src) {
     try {
       defaultOrigin = new URL(currentScript.src).origin;
     } catch (e) { }
   }
+
+  // --- CONFIGURATION ---
+  // You can easily edit these user-facing strings here. They will be shared across all widgets and plugins.
+  window.PYTHON_IDE_STRINGS = window.PYTHON_IDE_STRINGS || {
+    useCodeBtn: 'Use',
+    switchToTextEditorBtn: 'Switch to Text Editor',
+    switchToIdeBtn: 'Switch to Python Code Editor',
+    dragToResizeTitle: 'Drag to resize editor',
+  };
 
   // Centralized LMS Widget Manager CDN configuration
   const DEFAULT_LMS_WIDGET_MANAGER_URL = 'https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.iife.js';
@@ -60,14 +69,14 @@
       wrapper.appendChild(pre);
 
       const btn = document.createElement('div');
-      btn.textContent = 'Use';
-      btn.style.cssText = 'position: absolute; right: 0.4em; bottom: 0.4em; z-index: 10; user-select: none; cursor: pointer; background: #0e639c; color: white; padding: 0.2em 0.6em; border-radius: 0.25em; font-family: sans-serif; font-size: 0.75em; line-height: 1.2; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: background 0.2s;';
+      btn.textContent = window.PYTHON_IDE_STRINGS.useCodeBtn;
+      btn.style.cssText = 'position: absolute; right: 8px; bottom: 8px; z-index: 10; user-select: none; cursor: pointer; background: #0e639c; color: white; padding: 5px 12px; border-radius: 4px; font-family: sans-serif; font-size: 13px; line-height: 1.2; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: background 0.2s;';
 
       btn.addEventListener('mouseenter', () => {
-        if (btn.textContent === 'Use') btn.style.background = '#1177bb';
+        if (btn.textContent === window.PYTHON_IDE_STRINGS.useCodeBtn) btn.style.background = '#1177bb';
       });
       btn.addEventListener('mouseleave', () => {
-        if (btn.textContent === 'Use') btn.style.background = '#0e639c';
+        if (btn.textContent === window.PYTHON_IDE_STRINGS.useCodeBtn) btn.style.background = '#0e639c';
       });
       btn.addEventListener('mousedown', (e) => e.preventDefault());
 
@@ -151,7 +160,7 @@
     // Resize Handle (Lower RHS, textarea style)
     const resizeHandle = document.createElement('div');
     resizeHandle.className = 'lms-widget-resize-handle';
-    resizeHandle.title = 'Drag to resize editor';
+    resizeHandle.title = window.PYTHON_IDE_STRINGS.dragToResizeTitle;
     resizeHandle.style.cssText = 'position: absolute; right: 2px; bottom: 2px; width: 16px; height: 16px; cursor: se-resize; z-index: 25; opacity: 0.5; transition: opacity 0.2s; user-select: none; touch-action: none;';
     resizeHandle.innerHTML = `
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block; pointer-events: none;">
@@ -238,26 +247,26 @@
 
     embedTargets.forEach(target => {
       target.setAttribute('data-initialized', 'true');
-      
+
       let embed = target;
       // If the user used a single <script data-python-ide>, create a div right before it to act as the actual mount point
       if (target.tagName.toLowerCase() === 'script') {
         embed = document.createElement('div');
         embed.className = 'python-ide-embed';
         embed.setAttribute('data-initialized', 'true');
-        
+
         // Copy relevant configuration attributes from the script to the div
         Array.from(target.attributes).forEach(attr => {
           if (attr.name.startsWith('data-') && attr.name !== 'data-initialized' && attr.name !== 'data-python-ide') {
             embed.setAttribute(attr.name, attr.value);
           }
         });
-        
+
         target.parentNode.insertBefore(embed, target);
       }
-      
+
       embeds.push(embed);
-      
+
       const questionBlock = embed.closest('.que, .moodle-question, .formulation, form') || embed.parentElement || document;
       decoratePreTagsInBlock(questionBlock);
     });
@@ -369,7 +378,7 @@
             iframes.forEach(iframe => {
               if (iframe.contentWindow === e.source) {
                 if (iframe.__isManuallyResized) return;
-                
+
                 iframe.setAttribute('height', newHeight);
                 if (typeof iframe.__updateToggleHeight === 'function') {
                   iframe.__updateToggleHeight(newHeight);

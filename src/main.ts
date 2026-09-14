@@ -56,20 +56,20 @@ if (isSyncEnabled) {
                 if (config) {
                     if (config.isReadOnly || config.runMode === 'review' || config.runMode === 'grade') {
                         editor.setReadOnly(true);
-                        syncStatus.textContent = 'Read-Only';
+                        syncStatus.textContent = (window as any).IDE_UI_STRINGS?.statusReadOnly || 'Read-Only';
                     } else {
                         editor.setReadOnly(false);
-                        syncStatus.textContent = 'Ready';
+                        syncStatus.textContent = (window as any).IDE_UI_STRINGS?.statusReady || 'Ready';
                     }
                 } else {
-                    syncStatus.textContent = 'Ready';
+                    syncStatus.textContent = (window as any).IDE_UI_STRINGS?.statusReady || 'Ready';
                 }
                 break;
             }
 
             case 'SYNC_ACK': {
                 if (!isLocked && !editor.isReadOnly) {
-                    syncStatus.textContent = 'Saved to LMS';
+                    syncStatus.textContent = (window as any).IDE_UI_STRINGS?.statusSaved || 'Saved to LMS';
                 }
                 break;
             }
@@ -91,7 +91,7 @@ if (isSyncEnabled) {
             case 'ERROR_LOCKDOWN': {
                 isLocked = true;
                 editor.setReadOnly(true);
-                syncStatus.textContent = 'Save Failed / Locked';
+                syncStatus.textContent = (window as any).IDE_UI_STRINGS?.statusFailed || 'Save Failed / Locked';
                 syncStatus.style.color = 'var(--output-error)';
                 break;
             }
@@ -101,7 +101,7 @@ if (isSyncEnabled) {
     // 2. Debounced sync to host
     function triggerSync() {
         if (isLocked || editor.isReadOnly || !isSyncEnabled) return;
-        syncStatus.textContent = 'Syncing...';
+        syncStatus.textContent = (window as any).IDE_UI_STRINGS?.statusSyncing || 'Syncing...';
         if (debounceTimer) clearTimeout(debounceTimer);
         
         debounceTimer = setTimeout(() => {
