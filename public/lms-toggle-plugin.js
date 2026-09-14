@@ -163,17 +163,11 @@
       iframe.src = `${origin}/?sync=true${rowsParam}`;
       container.appendChild(iframe);
 
-      // Ensure LMSWidgetManager binds to this newly created container and iframe
-      if (window.LMSWidgetManager && typeof window.LMSWidgetManager.bootstrap === 'function') {
-        window.LMSWidgetManager.bootstrap();
-      } else {
-        import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
-          .then(m => {
-            window.LMSWidgetManager = m;
-            m.bootstrap();
-          })
-          .catch(err => console.error('[LmsTogglePlugin] Error loading LMSWidgetManager:', err));
-      }
+      // Notify LMSWidgetManager that a new container is mounted (decoupled handshake)
+      container.dispatchEvent(new CustomEvent('lms-widget:mount', {
+        bubbles: true,
+        detail: { container: container }
+      }));
 
       function updateView(animate = true) {
         if (!animate) {

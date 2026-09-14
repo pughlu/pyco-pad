@@ -175,17 +175,11 @@
       window.addEventListener('pointerup', onPointerUp);
     });
 
-      // Ensure LMSWidgetManager binds to this newly created container and iframe
-      if (window.LMSWidgetManager && typeof window.LMSWidgetManager.bootstrap === 'function') {
-        window.LMSWidgetManager.bootstrap();
-      } else {
-        import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
-          .then(m => {
-            window.LMSWidgetManager = m;
-            m.bootstrap();
-          })
-          .catch(err => console.error('[Embed] Error loading LMSWidgetManager:', err));
-      }
+      // Notify LMSWidgetManager that a new container is mounted (decoupled handshake)
+      container.dispatchEvent(new CustomEvent('lms-widget:mount', {
+        bubbles: true,
+        detail: { container: container }
+      }));
   }
 
 
@@ -335,17 +329,10 @@
       });
     }
 
-    // Load and bootstrap LMSWidgetManager
-    if (window.LMSWidgetManager && typeof window.LMSWidgetManager.bootstrap === 'function') {
-      window.LMSWidgetManager.bootstrap();
-    } else {
-      import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
-        .then(m => {
-          window.LMSWidgetManager = m;
-          m.bootstrap();
-        })
-        .catch(err => console.error('[Embed] Error loading LMSWidgetManager:', err));
-    }
+    // Notify that initial embeds are processed
+    document.dispatchEvent(new CustomEvent('lms-widgets:init', {
+      bubbles: true
+    }));
   }
 
   if (document.readyState === 'loading') {
