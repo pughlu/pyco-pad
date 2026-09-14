@@ -76,9 +76,14 @@
     });
   }
 
-  function initEmbeds() {
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function initEmbeds() {
     // Find all placeholder divs that haven't been initialized yet
     const embeds = document.querySelectorAll('.python-ide-embed:not([data-initialized])');
+    if (embeds.length === 0) return;
 
     // Get the base URL of where this embed.js script is hosted (e.g., https://python-web-ide.pwlewis.workers.dev)
     const currentScript = document.currentScript;
@@ -87,13 +92,24 @@
       origin = new URL(currentScript.src).origin;
     }
 
+    // Step 0: Decorate pre code tags immediately so copy buttons are active
     embeds.forEach(embed => {
+      const questionBlock = embed.closest('.que, .moodle-question, .formulation, form') || embed.parentElement || document;
+      decoratePreTagsInBlock(questionBlock);
+    });
+
+    // Step 1: "Wait 3 secs before loading script"
+    console.log('[Embed] Waiting 3 seconds before starting embed process...');
+    await delay(3000);
+
+    for (const embed of embeds) {
+      if (embed.getAttribute('data-initialized')) continue;
       embed.setAttribute('data-initialized', 'true');
 
       // Find the parent Moodle question container (usually .que, .moodle-question, or .formulation)
       const questionBlock = embed.closest('.que, .moodle-question, .formulation, form') || embed.parentElement || document;
 
-      // 1. Determine height based on Moodle textarea / configured rows
+      // Determine height based on Moodle textarea / configured rows
       const textarea = questionBlock.querySelector('textarea');
       let height = embed.getAttribute('data-height');
       let rows = 0;
@@ -114,8 +130,7 @@
           }
         }
 
-        // Hide Moodle's native answerbox so it doesn't flash or clutter,
-        // but keep it in the DOM outside .lms-widget-container so LMSWidgetManager discovers it
+        // Step 2: "First thing script should do is 'hide' answerbox and replace with plain grey placeholder div"
         textarea.style.position = 'absolute';
         textarea.style.left = '-9999px';
         textarea.style.opacity = '0';
@@ -132,40 +147,88 @@
         height = 400;
       }
 
-      // 2. Build the standard lms-widget-container
+      // Container for widget & placeholder
       const container = document.createElement('div');
       container.className = 'lms-widget-container';
+      container.style.position = 'relative';
+      container.style.width = '100%';
+      container.style.height = height + 'px';
+      container.style.transition = 'height 0.2s ease-out';
+      embed.appendChild(container);
 
-      // 3. Build the iframe: starts blurred and smoothly unblurs once loaded
+      // Plain grey placeholder div with 1s fade-in
+      const placeholder = document.createElement('div');
+      placeholder.className = 'lms-widget-placeholder';
+      placeholder.style.width = '100%';
+      placeholder.style.height = '100%';
+      placeholder.style.background = '#2e2e2e'; // Plain grey
+      placeholder.style.border = '1px solid #444';
+      placeholder.style.borderRadius = '4px';
+      placeholder.style.boxSizing = 'border-box';
+      placeholder.style.opacity = '0';
+      placeholder.style.transition = 'opacity 1s ease-in-out';
+      placeholder.style.position = 'absolute';
+      placeholder.style.top = '0';
+      placeholder.style.left = '0';
+      placeholder.style.zIndex = '1';
+      container.appendChild(placeholder);
+
+      // Trigger 1-second fade in for the placeholder
+      requestAnimationFrame(() => {
+        placeholder.style.opacity = '1';
+      });
+
+      // Step 3: "Wait 3 secs"
+      console.log('[Embed] Placeholder displayed. Waiting 3 seconds before preparing iframe...');
+      await delay(3000);
+
+      // Step 4: "Prepare iframe (outside of DOM?)"
+      // In browser DOM standards, an iframe must be attached to the DOM to trigger network requests and execution.
+      // We attach it inside container behind the placeholder with opacity: 0 and pointerEvents: none.
+      console.log('[Embed] Preparing iframe in background...');
       const iframe = document.createElement('iframe');
       iframe.setAttribute('data-lms-widget', 'true');
       iframe.setAttribute('width', '100%');
       iframe.setAttribute('height', height);
       iframe.style.width = '100%';
-      iframe.style.height = height + 'px';
+      iframe.style.height = '100%';
       iframe.style.border = '1px solid #333';
       iframe.style.borderRadius = '4px';
       iframe.style.background = '#1e1e1e';
-      iframe.style.filter = 'blur(8px)';
-      iframe.style.opacity = '0.7';
-      iframe.style.transition = 'filter 0.4s ease-out, opacity 0.4s ease-out, height 0.2s ease-out';
+      iframe.style.opacity = '0';
+      iframe.style.position = 'absolute';
+      iframe.style.top = '0';
+      iframe.style.left = '0';
+      iframe.style.zIndex = '2';
+      iframe.style.pointerEvents = 'none';
+      iframe.style.transition = 'opacity 1s ease-in-out';
 
       const rowsParam = rows > 0 ? `&rows=${rows}` : '';
       iframe.src = `${origin}/?sync=true${rowsParam}`;
 
-      const unblurIframe = () => {
-        iframe.style.filter = 'blur(0px)';
-        iframe.style.opacity = '1';
-      };
-      iframe.addEventListener('load', unblurIframe);
-      setTimeout(unblurIframe, 1200); // safety fallback
-
       container.appendChild(iframe);
-      embed.appendChild(container);
 
-      // Decorate pre elements only in this question block
-      decoratePreTagsInBlock(questionBlock);
-    });
+      // Step 5: "When iframe is ready swap it for the placeholder. Each transition should be a 1sec fade"
+      let swapped = false;
+      const swapForPlaceholder = () => {
+        if (swapped) return;
+        swapped = true;
+        console.log('[Embed] Iframe ready. Swapping with 1-second fade...');
+        placeholder.style.opacity = '0';
+        iframe.style.opacity = '1';
+        iframe.style.pointerEvents = 'auto';
+
+        setTimeout(() => {
+          if (placeholder.parentNode) {
+            placeholder.parentNode.removeChild(placeholder);
+          }
+        }, 1000);
+      };
+
+      iframe.addEventListener('load', swapForPlaceholder);
+      // Safety fallback in case load event already fired or is delayed
+      setTimeout(swapForPlaceholder, 4000);
+    }
 
     // Listen for dynamic SYNC_HEIGHT requests (e.g., when font size changes)
     if (!window.__pythonIdeHeightListenerAttached) {
@@ -178,7 +241,12 @@
             iframes.forEach(iframe => {
               if (iframe.contentWindow === e.source) {
                 iframe.setAttribute('height', newHeight);
-                iframe.style.height = newHeight + 'px';
+                const container = iframe.closest('.lms-widget-container');
+                if (container) {
+                  container.style.height = newHeight + 'px';
+                } else {
+                  iframe.style.height = newHeight + 'px';
+                }
               }
             });
           }
