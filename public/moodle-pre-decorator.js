@@ -1,6 +1,9 @@
 (function () {
   function decoratePreTagsInBlock(questionBlock) {
-    const preTags = questionBlock.querySelectorAll('pre:not(#notice pre):not(.debugging pre)');
+    // Automatically close any <details> tags that might have been saved in an open state by TinyMCE
+    questionBlock.querySelectorAll('details').forEach(details => details.removeAttribute('open'));
+
+    const preTags = questionBlock.querySelectorAll('pre:not(#notice pre):not(.debugging pre):not(.no-use):not([data-no-use])');
 
     preTags.forEach(pre => {
       if (pre.hasAttribute('data-decorated')) return;
@@ -45,22 +48,22 @@
 
         // 1. Unconditionally write to clipboard
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).catch(err => console.error("[Moodle Decorator] Clipboard failed:", err));
+          navigator.clipboard.writeText(text).catch(err => console.error("[Moodle Decorator] Clipboard failed:", err));
         }
 
         // 2. Attempt live insertion scoped to this question block
         if (activeEl && activeEl.tagName === 'IFRAME' && questionBlock.contains(activeEl)) {
-            console.log('[Moodle Decorator] Sending code to active iframe in this question block');
-            activeEl.contentWindow.postMessage({ type: 'INSERT_CONTENT', payload: { content: text } }, '*');
+          console.log('[Moodle Decorator] Sending code to active iframe in this question block');
+          activeEl.contentWindow.postMessage({ type: 'INSERT_CONTENT', payload: { content: text } }, '*');
         } else if (activeEl && (activeEl.isContentEditable || ['TEXTAREA', 'INPUT'].includes(activeEl.tagName)) && questionBlock.contains(activeEl)) {
-            console.log('[Moodle Decorator] Inserting code into active element in this question block');
-            if (activeEl.setRangeText) {
-                activeEl.setRangeText(text, activeEl.selectionStart, activeEl.selectionEnd, 'end');
-            } else if (document.execCommand) {
-                document.execCommand('insertText', false, text);
-            } else {
-                activeEl.value += text;
-            }
+          console.log('[Moodle Decorator] Inserting code into active element in this question block');
+          if (activeEl.setRangeText) {
+            activeEl.setRangeText(text, activeEl.selectionStart, activeEl.selectionEnd, 'end');
+          } else if (document.execCommand) {
+            document.execCommand('insertText', false, text);
+          } else {
+            activeEl.value += text;
+          }
         }
         // Visual feedback
         btn.textContent = 'Copied!';
