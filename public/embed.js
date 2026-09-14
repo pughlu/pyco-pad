@@ -98,9 +98,7 @@
       decoratePreTagsInBlock(questionBlock);
     });
 
-    // Step 1: "Wait 3 secs before loading script"
-    console.log('[Embed] Waiting 3 seconds before starting embed process...');
-    await delay(3000);
+    console.log('[Embed] Starting embed process...');
 
     for (const embed of embeds) {
       if (embed.getAttribute('data-initialized')) continue;
@@ -170,7 +168,7 @@
           const textareaStyle = window.getComputedStyle(textarea);
           const textareaBg = textareaStyle.backgroundColor;
           if (textareaBg && textareaBg !== 'rgba(0, 0, 0, 0)' && textareaBg !== 'transparent') {
-            placeholderBg = `color-mix(in srgb, ${textareaBg} 50%, ${widgetBg} 50%)`;
+            placeholderBg = textareaBg;
           }
         } catch (e) {}
       }
@@ -185,7 +183,7 @@
       placeholder.style.borderRadius = '4px';
       placeholder.style.boxSizing = 'border-box';
       placeholder.style.opacity = '0';
-      placeholder.style.transition = 'opacity 1s ease-in-out';
+      placeholder.style.transition = 'opacity 0.2s ease-in-out';
       placeholder.style.position = 'absolute';
       placeholder.style.top = '0';
       placeholder.style.left = '0';
@@ -197,9 +195,6 @@
         placeholder.style.opacity = '1';
       });
 
-      // Step 3: "Wait 3 secs"
-      console.log('[Embed] Placeholder displayed. Waiting 3 seconds before preparing iframe...');
-      await delay(3000);
 
       // Step 4: "Prepare iframe (outside of DOM?)"
       // In browser DOM standards, an iframe must be attached to the DOM to trigger network requests and execution.
@@ -211,7 +206,8 @@
       iframe.setAttribute('height', height);
       iframe.style.width = '100%';
       iframe.style.height = '100%';
-      iframe.style.border = '1px solid #333';
+      iframe.style.border = 'none';
+      iframe.style.outline = 'none';
       iframe.style.borderRadius = '4px';
       iframe.style.background = widgetBg;
       iframe.style.opacity = '1';
@@ -243,7 +239,7 @@
           if (placeholder.parentNode) {
             placeholder.parentNode.removeChild(placeholder);
           }
-        }, 1100);
+        }, 300);
       };
 
       iframe.addEventListener('load', swapForPlaceholder);

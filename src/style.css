@@ -27,7 +27,7 @@
   --token-number: #b5cea8;
   --token-decorator: #c586c0;
 
-  --editor-font-size: 14px;
+  --editor-font-size: 1em;
 }
 
 body.theme-light {

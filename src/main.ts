@@ -157,10 +157,10 @@ themeSelect.addEventListener('change', () => {
 });
 
 // 2. Font Size Persistence & Height Scaling
-let currentFontSize = 14;
+let currentFontSize = 1.0;
 try {
-    const savedFontSize = parseInt(localStorage.getItem('py_ide_font_size') || '14', 10);
-    if (!isNaN(savedFontSize) && savedFontSize >= 10 && savedFontSize <= 32) {
+    const savedFontSize = parseFloat(localStorage.getItem('py_ide_font_size_em') || '1.0');
+    if (!isNaN(savedFontSize) && savedFontSize >= 0.5 && savedFontSize <= 3.0) {
         currentFontSize = savedFontSize;
     }
 } catch (e) {
@@ -170,7 +170,9 @@ try {
 function notifyHeightBasedOnRows() {
     if (targetRows >= 3) {
         // 40px toolbar + 35px panel header + 30px editor padding + (rows * lineHeight) + 10px buffer
-        const lineHeight = currentFontSize * 1.5;
+        // currentFontSize is in em. Base browser font size is typically 16px.
+        const pixelFontSize = currentFontSize * 16;
+        const lineHeight = pixelFontSize * 1.5;
         const neededHeight = Math.round(40 + 35 + 30 + (targetRows * lineHeight) + 10);
         window.parent.postMessage({
             type: 'SYNC_HEIGHT',
@@ -194,10 +196,10 @@ settingsModal.addEventListener('click', (e) => {
 });
 
 function updateFontSize() {
-    fontSizeDisplay.textContent = currentFontSize + 'px';
-    document.documentElement.style.setProperty('--editor-font-size', currentFontSize + 'px');
+    fontSizeDisplay.textContent = currentFontSize.toFixed(1) + 'em';
+    document.documentElement.style.setProperty('--editor-font-size', currentFontSize + 'em');
     try {
-        localStorage.setItem('py_ide_font_size', currentFontSize.toString());
+        localStorage.setItem('py_ide_font_size_em', currentFontSize.toString());
     } catch (e) {
         console.warn('Cannot save font size to localStorage:', e);
     }
@@ -205,15 +207,15 @@ function updateFontSize() {
 }
 
 btnFontInc.addEventListener('click', () => {
-    if (currentFontSize < 32) {
-        currentFontSize += 2;
+    if (currentFontSize < 3.0) {
+        currentFontSize += 0.1;
         updateFontSize();
     }
 });
 
 btnFontDec.addEventListener('click', () => {
-    if (currentFontSize > 10) {
-        currentFontSize -= 2;
+    if (currentFontSize > 0.5) {
+        currentFontSize -= 0.1;
         updateFontSize();
     }
 });
