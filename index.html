@@ -17,6 +17,8 @@
   <!-- Load Skulpt for Python Execution -->
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+  <!-- Load LZ-String for Code Sharing -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 </head>
 
 <body>
@@ -52,6 +54,13 @@
       </button>
       <button id="btn-layout" class="btn-layout" title="Change Layout">
         <span id="layout-icon">◫</span> Layout
+      </button>
+      <button id="btn-share" class="btn-layout" title="Share Code">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+          <polyline points="16 6 12 2 8 6"/>
+          <line x1="12" y1="2" x2="12" y2="15"/>
+        </svg> Share
       </button>
       <button id="btn-run" class="btn-run">► Run Code</button>
     </div>

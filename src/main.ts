@@ -3,7 +3,24 @@ import { Editor } from './editor';
 import { SkulptRunner } from './skulpt-runner';
 import type { HostMessage } from './types';
 
+declare var LZString: any;
+
 const editor = new Editor();
+
+const hash = window.location.hash;
+if (hash.startsWith('#c=')) {
+  try {
+    if (typeof LZString !== 'undefined') {
+      const compressed = hash.substring(3);
+      const code = LZString.decompressFromEncodedURIComponent(compressed);
+      if (code) {
+        editor.setValue(code);
+      }
+    }
+  } catch (e) {
+    console.error("Failed to decompress code from URL", e);
+  }
+}
 const runner = new SkulptRunner();
 
 const syncStatus = document.getElementById('sync-status') as HTMLElement;
@@ -31,6 +48,27 @@ if (isSafeModeVisible) {
 // UI Setup
 document.getElementById('btn-run')?.addEventListener('click', () => {
     runner.runCode(editor.getValue());
+});
+
+const btnShare = document.getElementById('btn-share');
+if (isSyncEnabled && btnShare) {
+    btnShare.style.display = 'none';
+}
+btnShare?.addEventListener('click', () => {
+    if (isSyncEnabled) return; // double safety
+    if (typeof LZString === 'undefined') return;
+    const code = editor.getValue();
+    const compressed = LZString.compressToEncodedURIComponent(code);
+    const url = new URL(window.location.href);
+    url.hash = 'c=' + compressed;
+    
+    navigator.clipboard.writeText(url.href).then(() => {
+        const originalContent = btnShare.innerHTML;
+        btnShare.innerHTML = '<span style="color:#4ec9b0;font-weight:bold;">Copied!</span>';
+        setTimeout(() => {
+            btnShare.innerHTML = originalContent;
+        }, 2000);
+    });
 });
 
 // 1. Listen for messages from Host LMS Manager
