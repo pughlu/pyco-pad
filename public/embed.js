@@ -194,6 +194,7 @@
         const deltaY = moveEvt.clientY - startY;
         const newHeight = Math.max(180, Math.round(startHeight + deltaY));
         container.style.height = newHeight + 'px';
+        iframe.style.height = newHeight + 'px';
         iframe.setAttribute('height', newHeight);
       };
 
@@ -384,6 +385,8 @@
                   const container = iframe.closest('.lms-widget-container');
                   if (container) {
                     container.style.height = newHeight + 'px';
+                  } else {
+                    iframe.style.height = newHeight + 'px';
                   }
                 }
               }
