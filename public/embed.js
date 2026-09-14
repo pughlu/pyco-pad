@@ -180,6 +180,13 @@
         bubbles: true,
         detail: { container: container }
       }));
+
+      // Ensure the external LMSWidgetManager module is loaded
+      if (!window.LMSWidgetManager) {
+        import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
+          .then(m => { window.LMSWidgetManager = m; })
+          .catch(err => console.error('[Embed] Error loading LMSWidgetManager:', err));
+      }
   }
 
 
@@ -333,6 +340,13 @@
     document.dispatchEvent(new CustomEvent('lms-widgets:init', {
       bubbles: true
     }));
+
+    // Ensure the external LMSWidgetManager module is loaded
+    if (!window.LMSWidgetManager) {
+      import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
+        .then(m => { window.LMSWidgetManager = m; })
+        .catch(err => console.error('[Embed] Error loading LMSWidgetManager:', err));
+    }
   }
 
   if (document.readyState === 'loading') {

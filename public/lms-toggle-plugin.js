@@ -169,6 +169,13 @@
         detail: { container: container }
       }));
 
+      // Ensure the external LMSWidgetManager module is loaded
+      if (!window.LMSWidgetManager) {
+        import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
+          .then(m => { window.LMSWidgetManager = m; })
+          .catch(err => console.error('[LmsTogglePlugin] Error loading LMSWidgetManager:', err));
+      }
+
       function updateView(animate = true) {
         if (!animate) {
           textarea.style.transition = 'none';
