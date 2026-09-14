@@ -23,6 +23,12 @@
         placeholder.style.margin = computedStyle.margin;
       }
       
+      // Force enough top margin to fit the toggle button above the widget
+      const currentTopMargin = parseInt(placeholder.style.marginTop || '0', 10);
+      if (currentTopMargin < 30) {
+        placeholder.style.marginTop = '30px';
+      }
+      
       // Toggle State Management
       let savedMode = null;
       try {
@@ -42,7 +48,7 @@
       toggleBtn.type = 'button';
       toggleBtn.textContent = targetMode === 'iframe' ? window.PYTHON_IDE_STRINGS.switchToTextEditorBtn : window.PYTHON_IDE_STRINGS.switchToIdeBtn;
       toggleBtn.disabled = true;
-      toggleBtn.style.cssText = 'position: absolute; right: 0; top: -36px; padding: 5px 12px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9; color: #333; z-index: 20; transition: background 0.2s, opacity 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: block;';
+      toggleBtn.style.cssText = 'position: absolute; right: 0; top: -28px; padding: 4px 10px; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9; color: #333; z-index: 20; transition: background 0.2s, opacity 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: block;';
       placeholder.appendChild(toggleBtn);
       
       // Resize Handle (Lower RHS, textarea style)
