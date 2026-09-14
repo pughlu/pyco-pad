@@ -40,9 +40,9 @@
       // Toggle button
       const toggleBtn = document.createElement('button');
       toggleBtn.type = 'button';
-      toggleBtn.textContent = targetMode === 'iframe' ? 'Switch to Raw Text' : 'Switch to IDE';
+      toggleBtn.textContent = targetMode === 'iframe' ? 'Switch to Text Editor' : 'Switch to Python Code Editor';
       toggleBtn.disabled = true;
-      toggleBtn.style.cssText = 'position: absolute; right: 0; top: -30px; padding: 4px 10px; font-size: 12px; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9; color: #333; z-index: 20; transition: background 0.2s, opacity 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: block;';
+      toggleBtn.style.cssText = 'position: absolute; right: 0; top: -36px; padding: 5px 12px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9; color: #333; z-index: 20; transition: background 0.2s, opacity 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: block;';
       placeholder.appendChild(toggleBtn);
       
       // Resize Handle (Lower RHS, textarea style)
@@ -201,7 +201,7 @@
         toggleBtn.disabled = !isIframeReady;
 
         if (viewMode === 'iframe') {
-          toggleBtn.textContent = 'Switch to Raw Text';
+          toggleBtn.textContent = 'Switch to Text Editor';
           resizeHandle.style.display = 'block';
           
           // Hide textarea
@@ -218,7 +218,7 @@
           placeholder.style.height = iframeHeight + 'px';
           placeholder.style.background = 'transparent';
         } else {
-          toggleBtn.textContent = 'Switch to IDE';
+          toggleBtn.textContent = 'Switch to Python Code Editor';
           resizeHandle.style.display = 'none';
           
           // Hide iframe
