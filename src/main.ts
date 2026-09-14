@@ -7,20 +7,25 @@ declare var LZString: any;
 
 const editor = new Editor();
 
-const hash = window.location.hash;
-if (hash.startsWith('#c=')) {
-  try {
-    if (typeof LZString !== 'undefined') {
-      const compressed = hash.substring(3);
-      const code = LZString.decompressFromEncodedURIComponent(compressed);
-      if (code) {
-        editor.setValue(code);
+const loadCodeFromHash = () => {
+  const hash = window.location.hash;
+  if (hash.startsWith('#c=')) {
+    try {
+      if (typeof LZString !== 'undefined') {
+        const compressed = hash.substring(3);
+        const code = LZString.decompressFromEncodedURIComponent(compressed);
+        if (code) {
+          editor.setValue(code);
+        }
       }
+    } catch (e) {
+      console.error("Failed to decompress code from URL", e);
     }
-  } catch (e) {
-    console.error("Failed to decompress code from URL", e);
   }
-}
+};
+
+loadCodeFromHash();
+window.addEventListener('hashchange', loadCodeFromHash);
 const runner = new SkulptRunner();
 
 const syncStatus = document.getElementById('sync-status') as HTMLElement;
