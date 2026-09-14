@@ -123,10 +123,10 @@
         }
 
         if (!height) {
-          if (rows >= 3) {
-            height = Math.max(300, 115 + Math.round(rows * 21));
-          } else if (textarea.clientHeight > 100) {
-            height = textarea.clientHeight + 80;
+          if (textarea.clientHeight > 50) {
+            height = textarea.clientHeight;
+          } else if (rows >= 3) {
+            height = Math.max(300, Math.round((rows + 2) * 21));
           }
         }
 
@@ -156,12 +156,31 @@
       container.style.transition = 'height 0.2s ease-out';
       embed.appendChild(container);
 
+      // Determine widget background based on theme
+      let savedTheme = 'dark';
+      try {
+        savedTheme = localStorage.getItem('py_ide_theme') || 'dark';
+      } catch (e) {}
+      const widgetBg = savedTheme === 'light' ? '#ffffff' : '#1e1e1e';
+      
+      // Determine placeholder background by mixing textarea bg and widget bg
+      let placeholderBg = widgetBg;
+      if (textarea) {
+        try {
+          const textareaStyle = window.getComputedStyle(textarea);
+          const textareaBg = textareaStyle.backgroundColor;
+          if (textareaBg && textareaBg !== 'rgba(0, 0, 0, 0)' && textareaBg !== 'transparent') {
+            placeholderBg = `color-mix(in srgb, ${textareaBg} 50%, ${widgetBg} 50%)`;
+          }
+        } catch (e) {}
+      }
+
       // Plain grey placeholder div with 1s fade-in
       const placeholder = document.createElement('div');
       placeholder.className = 'lms-widget-placeholder';
       placeholder.style.width = '100%';
       placeholder.style.height = '100%';
-      placeholder.style.background = '#2e2e2e'; // Plain grey
+      placeholder.style.background = placeholderBg;
       placeholder.style.border = '1px solid #444';
       placeholder.style.borderRadius = '4px';
       placeholder.style.boxSizing = 'border-box';
@@ -194,7 +213,7 @@
       iframe.style.height = '100%';
       iframe.style.border = '1px solid #333';
       iframe.style.borderRadius = '4px';
-      iframe.style.background = '#1e1e1e';
+      iframe.style.background = widgetBg;
       iframe.style.opacity = '1';
       iframe.style.position = 'absolute';
       iframe.style.top = '0';
