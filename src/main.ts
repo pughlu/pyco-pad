@@ -168,17 +168,21 @@ try {
 }
 
 function notifyHeightBasedOnRows() {
-    if (targetRows >= 3) {
-        // 40px toolbar + 35px panel header + 30px editor padding + (rows * lineHeight) + 10px buffer
-        // currentFontSize is in em. Base browser font size is typically 16px.
-        const pixelFontSize = currentFontSize * 16;
-        const lineHeight = pixelFontSize * 1.5;
-        const neededHeight = Math.round(40 + 35 + 30 + (targetRows * lineHeight) + 10);
-        window.parent.postMessage({
-            type: 'SYNC_HEIGHT',
-            payload: { height: neededHeight }
-        }, '*');
+    // 40px toolbar + 35px panel header + 30px editor padding + 10px buffer = 115px
+    const pixelFontSize = currentFontSize * 16;
+    const lineHeight = pixelFontSize * 1.5;
+    const chromeHeight = 115;
+    let neededHeight: number;
+    if (targetRows > 0) {
+        neededHeight = Math.round(chromeHeight + (targetRows * lineHeight));
+    } else {
+        const containerEl = document.getElementById('main-container');
+        neededHeight = Math.max(350, containerEl ? containerEl.scrollHeight + 40 : 380);
     }
+    window.parent.postMessage({
+        type: 'SYNC_HEIGHT',
+        payload: { height: neededHeight }
+    }, '*');
 }
 
 btnConfig.addEventListener('click', () => {

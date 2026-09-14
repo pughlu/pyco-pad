@@ -138,16 +138,19 @@
       if (textarea) {
         const attrRows = parseInt(textarea.getAttribute('rows') || '0', 10);
         if (attrRows > 0) {
-          rows = Math.max(1, attrRows - 2);
-        } else if (textarea.clientHeight > 100) {
-          rows = Math.max(1, Math.round(textarea.clientHeight / 20) - 2);
+          rows = attrRows;
+        } else if (textarea.clientHeight > 50) {
+          rows = Math.max(3, Math.round(textarea.clientHeight / 24));
         }
 
         if (!height) {
+          const headerAllowance = 115; // 40px toolbar + 35px header + 30px padding + 10px buffer
           if (textarea.clientHeight > 50) {
-            height = textarea.clientHeight;
-          } else if (rows >= 3) {
-            height = Math.max(300, Math.round((rows + 2) * 21));
+            height = textarea.clientHeight + headerAllowance;
+          } else if (rows > 0) {
+            height = Math.max(320, Math.round(headerAllowance + (rows * 24)));
+          } else {
+            height = 400;
           }
         }
       }
