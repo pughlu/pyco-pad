@@ -170,10 +170,17 @@
       }));
 
       // Ensure the external LMSWidgetManager module is loaded
-      if (!window.LMSWidgetManager) {
-        import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
+      if (typeof window.loadLMSWidgetManager === 'function') {
+        window.loadLMSWidgetManager();
+      } else if (!window.LMSWidgetManager && !window._lmsWidgetManagerLoading) {
+        window._lmsWidgetManagerLoading = true;
+        const mgrUrl = window.LMS_WIDGET_MANAGER_URL || 'https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.es.js';
+        import(mgrUrl)
           .then(m => { window.LMSWidgetManager = m; })
-          .catch(err => console.error('[LmsTogglePlugin] Error loading LMSWidgetManager:', err));
+          .catch(err => {
+            window._lmsWidgetManagerLoading = false;
+            console.error('[LmsTogglePlugin] Error loading LMSWidgetManager from ' + mgrUrl + ':', err);
+          });
       }
 
       function updateView(animate = true) {

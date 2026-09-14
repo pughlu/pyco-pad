@@ -7,6 +7,30 @@
     } catch (e) { }
   }
 
+  // Centralized LMS Widget Manager CDN configuration
+  const DEFAULT_LMS_WIDGET_MANAGER_URL = 'https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.es.js';
+  const lmsWidgetManagerUrl = window.LMS_WIDGET_MANAGER_URL ||
+    (currentScript && (currentScript.getAttribute('data-widget-manager-url') || currentScript.getAttribute('data-manager-url'))) ||
+    DEFAULT_LMS_WIDGET_MANAGER_URL;
+  window.LMS_WIDGET_MANAGER_URL = lmsWidgetManagerUrl;
+
+  function loadLMSWidgetManager() {
+    if (window.LMSWidgetManager || window._lmsWidgetManagerLoading) {
+      return;
+    }
+    window._lmsWidgetManagerLoading = true;
+    const url = window.LMS_WIDGET_MANAGER_URL || DEFAULT_LMS_WIDGET_MANAGER_URL;
+    import(url)
+      .then(m => {
+        window.LMSWidgetManager = m;
+      })
+      .catch(err => {
+        window._lmsWidgetManagerLoading = false;
+        console.error('[Embed] Error loading LMSWidgetManager from ' + url + ':', err);
+      });
+  }
+  window.loadLMSWidgetManager = loadLMSWidgetManager;
+
   function decoratePreTagsInBlock(questionBlock) {
     const preTags = questionBlock.querySelectorAll('pre:not(#notice pre):not(.debugging pre)');
 
@@ -182,11 +206,7 @@
     }));
 
     // Ensure the external LMSWidgetManager module is loaded
-    if (!window.LMSWidgetManager) {
-      import('https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.es.js')
-        .then(m => { window.LMSWidgetManager = m; })
-        .catch(err => console.error('[Embed] Error loading LMSWidgetManager:', err));
-    }
+    loadLMSWidgetManager();
   }
 
 
@@ -342,11 +362,7 @@
     }));
 
     // Ensure the external LMSWidgetManager module is loaded
-    if (!window.LMSWidgetManager) {
-      import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
-        .then(m => { window.LMSWidgetManager = m; })
-        .catch(err => console.error('[Embed] Error loading LMSWidgetManager:', err));
-    }
+    loadLMSWidgetManager();
   }
 
   if (document.readyState === 'loading') {
