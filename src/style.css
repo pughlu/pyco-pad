@@ -28,6 +28,9 @@
   --token-decorator: #c586c0;
 
   --editor-font-size: 1em;
+
+  --logo-py: #3776AB;
+  --logo-pad: #FFD43B;
 }
 
 body.theme-light {
@@ -57,6 +60,9 @@ body.theme-light {
   --token-comment: #008000;
   --token-number: #098658;
   --token-decorator: #267f99;
+
+  --logo-py: #005f9e;
+  --logo-pad: #b45309; /* Darker amber for contrast on light background */
 }
 
 body.theme-hc {
@@ -86,6 +92,9 @@ body.theme-hc {
   --token-comment: #00ffff;
   --token-number: #ffaa00;
   --token-decorator: #ff0000;
+
+  --logo-py: #00ffff;
+  --logo-pad: #ffcc00;
 }
 
 /* --- GENERAL LAYOUT --- */
@@ -124,16 +133,13 @@ html {
   font-size: 1.25em;
   letter-spacing: 0px;
   line-height: 1;
-  background-color: #1f2937;
-  padding: 4px 12px;
-  border-radius: 6px;
 }
 
 .pyco-logo-py {
-  color: #3776AB;
+  color: var(--logo-py);
 }
 .pyco-logo-pad {
-  color: #FFD43B;
+  color: var(--logo-pad);
 }
 
 .toolbar-left, .toolbar-actions {
