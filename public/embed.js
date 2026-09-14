@@ -116,6 +116,64 @@
     iframe.src = `${origin}/?sync=true${rowsParam}`;
 
     container.appendChild(iframe);
+
+    // Resize Handle (Lower RHS, textarea style)
+    const resizeHandle = document.createElement('div');
+    resizeHandle.className = 'lms-widget-resize-handle';
+    resizeHandle.title = 'Drag to resize editor';
+    resizeHandle.style.cssText = 'position: absolute; right: 2px; bottom: 2px; width: 16px; height: 16px; cursor: se-resize; z-index: 25; opacity: 0.5; transition: opacity 0.2s; user-select: none; touch-action: none;';
+    resizeHandle.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block; pointer-events: none;">
+        <path d="M12 4L4 12M12 8L8 12M12 12L12 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </svg>
+    `;
+    resizeHandle.style.color = widgetBg === '#ffffff' ? '#666' : '#bbb';
+    resizeHandle.addEventListener('mouseenter', () => { resizeHandle.style.opacity = '1'; });
+    resizeHandle.addEventListener('mouseleave', () => { resizeHandle.style.opacity = '0.5'; });
+    container.appendChild(resizeHandle);
+
+    let isDragging = false;
+    let startY = 0;
+    let startHeight = 0;
+
+    resizeHandle.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      isDragging = true;
+      startY = e.clientY;
+      startHeight = container.offsetHeight;
+      try {
+        resizeHandle.setPointerCapture(e.pointerId);
+      } catch (err) {}
+      
+      iframe.style.pointerEvents = 'none';
+      document.body.style.userSelect = 'none';
+
+      const onPointerMove = (moveEvt) => {
+        if (!isDragging) return;
+        const deltaY = moveEvt.clientY - startY;
+        const newHeight = Math.max(180, Math.round(startHeight + deltaY));
+        container.style.height = newHeight + 'px';
+        iframe.style.height = newHeight + 'px';
+        iframe.setAttribute('height', newHeight);
+      };
+
+      const onPointerUp = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        try {
+          resizeHandle.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+        
+        iframe.style.pointerEvents = 'auto';
+        document.body.style.removeProperty('user-select');
+      };
+
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    });
   }
 
 

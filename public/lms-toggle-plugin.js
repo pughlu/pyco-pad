@@ -45,6 +45,64 @@
       toggleBtn.style.cssText = 'position: absolute; right: 0; top: -30px; padding: 4px 10px; font-size: 12px; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9; color: #333; z-index: 20; transition: background 0.2s, opacity 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: block;';
       placeholder.appendChild(toggleBtn);
       
+      // Resize Handle (Lower RHS, textarea style)
+      const resizeHandle = document.createElement('div');
+      resizeHandle.className = 'lms-widget-resize-handle';
+      resizeHandle.title = 'Drag to resize editor';
+      resizeHandle.style.cssText = 'position: absolute; right: 2px; bottom: 2px; width: 16px; height: 16px; cursor: se-resize; z-index: 25; display: none; opacity: 0.5; transition: opacity 0.2s; user-select: none; touch-action: none;';
+      resizeHandle.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block; pointer-events: none;">
+          <path d="M12 4L4 12M12 8L8 12M12 12L12 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+      `;
+      resizeHandle.style.color = widgetBg === '#ffffff' ? '#666' : '#bbb';
+      resizeHandle.addEventListener('mouseenter', () => { resizeHandle.style.opacity = '1'; });
+      resizeHandle.addEventListener('mouseleave', () => { resizeHandle.style.opacity = '0.5'; });
+      placeholder.appendChild(resizeHandle);
+
+      let isDragging = false;
+      let startY = 0;
+      let startHeight = 0;
+
+      resizeHandle.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        isDragging = true;
+        startY = e.clientY;
+        startHeight = placeholder.offsetHeight;
+        try {
+          resizeHandle.setPointerCapture(e.pointerId);
+        } catch (err) {}
+        
+        iframe.style.pointerEvents = 'none';
+        document.body.style.userSelect = 'none';
+
+        const onPointerMove = (moveEvt) => {
+          if (!isDragging) return;
+          const deltaY = moveEvt.clientY - startY;
+          const newHeight = Math.max(180, Math.round(startHeight + deltaY));
+          placeholder.style.height = newHeight + 'px';
+          iframeHeight = newHeight;
+          iframe.setAttribute('height', newHeight);
+        };
+
+        const onPointerUp = () => {
+          if (!isDragging) return;
+          isDragging = false;
+          try {
+            resizeHandle.releasePointerCapture(e.pointerId);
+          } catch (err) {}
+          window.removeEventListener('pointermove', onPointerMove);
+          window.removeEventListener('pointerup', onPointerUp);
+          
+          iframe.style.pointerEvents = 'auto';
+          document.body.style.removeProperty('user-select');
+        };
+
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+      });
+      
       // The iframe container
       const container = document.createElement('div');
       container.className = 'lms-widget-container';
@@ -122,6 +180,7 @@
 
         if (viewMode === 'iframe') {
           toggleBtn.textContent = 'Switch to Raw Text';
+          resizeHandle.style.display = 'block';
           
           // Hide textarea
           textarea.style.setProperty('opacity', '0', 'important');
@@ -138,6 +197,7 @@
           placeholder.style.background = 'transparent';
         } else {
           toggleBtn.textContent = 'Switch to IDE';
+          resizeHandle.style.display = 'none';
           
           // Hide iframe
           iframe.style.setProperty('opacity', '0', 'important');
