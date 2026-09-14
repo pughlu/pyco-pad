@@ -83,6 +83,7 @@
           const deltaY = moveEvt.clientY - startY;
           const newHeight = Math.max(180, Math.round(startHeight + deltaY));
           placeholder.style.height = newHeight + 'px';
+          container.style.height = newHeight + 'px';
           iframeHeight = newHeight;
           iframe.setAttribute('height', newHeight);
         };
@@ -216,6 +217,7 @@
           
           // Expand placeholder to accurate iframe height instantly
           placeholder.style.height = iframeHeight + 'px';
+          container.style.height = iframeHeight + 'px';
           placeholder.style.background = 'transparent';
         } else {
           toggleBtn.textContent = window.PYTHON_IDE_STRINGS.switchToIdeBtn;
@@ -275,6 +277,7 @@
           iframeHeight = newHeight;
           if (isIframeReady && viewMode === 'iframe') {
             placeholder.style.height = iframeHeight + 'px';
+            container.style.height = iframeHeight + 'px';
           } else if (!isIframeReady && targetMode === 'iframe') {
             // First accurate height received from rendered iframe, perform transition now!
             markReadyAndApply(true);
