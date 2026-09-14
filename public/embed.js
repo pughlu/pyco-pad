@@ -171,6 +171,7 @@
       e.preventDefault();
       e.stopPropagation();
       isDragging = true;
+      iframe.__isManuallyResized = true;
       startY = e.clientY;
       startHeight = container.offsetHeight;
       try {
@@ -221,8 +222,9 @@
   // --- MAIN INIT ---
 
   function initEmbeds() {
-    const embeds = document.querySelectorAll('.python-ide-embed:not([data-initialized])');
-    if (embeds.length === 0) return;
+    // Find traditional div embeds AND single-script embeds
+    const embedTargets = document.querySelectorAll('.python-ide-embed:not([data-initialized]), script[data-python-ide]:not([data-initialized])');
+    if (embedTargets.length === 0) return;
 
     let origin = defaultOrigin;
     const scriptRef = currentScript || document.currentScript;
@@ -232,7 +234,30 @@
       } catch (e) { }
     }
 
-    embeds.forEach(embed => {
+    const embeds = [];
+
+    embedTargets.forEach(target => {
+      target.setAttribute('data-initialized', 'true');
+      
+      let embed = target;
+      // If the user used a single <script data-python-ide>, create a div right before it to act as the actual mount point
+      if (target.tagName.toLowerCase() === 'script') {
+        embed = document.createElement('div');
+        embed.className = 'python-ide-embed';
+        embed.setAttribute('data-initialized', 'true');
+        
+        // Copy relevant configuration attributes from the script to the div
+        Array.from(target.attributes).forEach(attr => {
+          if (attr.name.startsWith('data-') && attr.name !== 'data-initialized' && attr.name !== 'data-python-ide') {
+            embed.setAttribute(attr.name, attr.value);
+          }
+        });
+        
+        target.parentNode.insertBefore(embed, target);
+      }
+      
+      embeds.push(embed);
+      
       const questionBlock = embed.closest('.que, .moodle-question, .formulation, form') || embed.parentElement || document;
       decoratePreTagsInBlock(questionBlock);
     });
@@ -240,8 +265,6 @@
     console.log('[Embed] Starting embed process...');
 
     for (const embed of embeds) {
-      if (embed.getAttribute('data-initialized')) continue;
-      embed.setAttribute('data-initialized', 'true');
 
       const questionBlock = embed.closest('.que, .moodle-question, .formulation, form') || embed.parentElement || document;
       const textarea = questionBlock.querySelector('textarea');
@@ -345,6 +368,8 @@
             const iframes = document.querySelectorAll('iframe[data-lms-widget]');
             iframes.forEach(iframe => {
               if (iframe.contentWindow === e.source) {
+                if (iframe.__isManuallyResized) return;
+                
                 iframe.setAttribute('height', newHeight);
                 if (typeof iframe.__updateToggleHeight === 'function') {
                   iframe.__updateToggleHeight(newHeight);

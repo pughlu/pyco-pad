@@ -68,6 +68,7 @@
         e.preventDefault();
         e.stopPropagation();
         isDragging = true;
+        iframe.__isManuallyResized = true;
         startY = e.clientY;
         startHeight = placeholder.offsetHeight;
         try {
@@ -270,6 +271,7 @@
       }
 
       function handleNewIframeHeight(newHeight) {
+        if (iframe.__isManuallyResized) return;
         if (typeof newHeight === 'number' && newHeight >= 100) {
           iframeHeight = newHeight;
           if (isIframeReady && viewMode === 'iframe') {
