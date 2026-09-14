@@ -4,7 +4,7 @@
   if (currentScript && currentScript.src) {
     try {
       defaultOrigin = new URL(currentScript.src).origin;
-    } catch (e) {}
+    } catch (e) { }
   }
 
   function decoratePreTagsInBlock(questionBlock) {
@@ -59,7 +59,7 @@
             activeEl.value += text;
           }
         }
-        
+
         btn.textContent = 'Copied!';
         btn.style.background = '#4ec9b0';
         setTimeout(() => {
@@ -144,8 +144,8 @@
       startHeight = container.offsetHeight;
       try {
         resizeHandle.setPointerCapture(e.pointerId);
-      } catch (err) {}
-      
+      } catch (err) { }
+
       iframe.style.pointerEvents = 'none';
       document.body.style.userSelect = 'none';
 
@@ -163,10 +163,10 @@
         isDragging = false;
         try {
           resizeHandle.releasePointerCapture(e.pointerId);
-        } catch (err) {}
+        } catch (err) { }
         window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('pointerup', onPointerUp);
-        
+
         iframe.style.pointerEvents = 'auto';
         document.body.style.removeProperty('user-select');
       };
@@ -175,18 +175,18 @@
       window.addEventListener('pointerup', onPointerUp);
     });
 
-      // Notify LMSWidgetManager that a new container is mounted (decoupled handshake)
-      container.dispatchEvent(new CustomEvent('lms-widget:mount', {
-        bubbles: true,
-        detail: { container: container }
-      }));
+    // Notify LMSWidgetManager that a new container is mounted (decoupled handshake)
+    container.dispatchEvent(new CustomEvent('lms-widget:mount', {
+      bubbles: true,
+      detail: { container: container }
+    }));
 
-      // Ensure the external LMSWidgetManager module is loaded
-      if (!window.LMSWidgetManager) {
-        import('https://python-web-ide.pages.dev/lms-widget-manager.es.js')
-          .then(m => { window.LMSWidgetManager = m; })
-          .catch(err => console.error('[Embed] Error loading LMSWidgetManager:', err));
-      }
+    // Ensure the external LMSWidgetManager module is loaded
+    if (!window.LMSWidgetManager) {
+      import('https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.es.js')
+        .then(m => { window.LMSWidgetManager = m; })
+        .catch(err => console.error('[Embed] Error loading LMSWidgetManager:', err));
+    }
   }
 
 
@@ -202,7 +202,7 @@
     if (scriptRef && scriptRef.src) {
       try {
         origin = new URL(scriptRef.src).origin;
-      } catch (e) {}
+      } catch (e) { }
     }
 
     embeds.forEach(embed => {
@@ -244,7 +244,7 @@
       let savedTheme = 'dark';
       try {
         savedTheme = localStorage.getItem('py_ide_theme') || 'dark';
-      } catch (e) {}
+      } catch (e) { }
       const widgetBg = savedTheme === 'light' ? '#ffffff' : '#1e1e1e';
 
       // Config reading
@@ -262,7 +262,7 @@
           if (!window._lmsTogglePluginLoading) {
             window._lmsTogglePluginLoading = [];
             const pluginScript = document.createElement('script');
-            
+
             // Resolve relative to embed.js path
             let pluginUrl = `${origin}/lms-toggle-plugin.js`;
             if (currentScript && currentScript.src) {
@@ -272,12 +272,12 @@
                 pathParts[pathParts.length - 1] = 'lms-toggle-plugin.js';
                 urlObj.pathname = pathParts.join('/');
                 pluginUrl = urlObj.href;
-              } catch (e) {}
+              } catch (e) { }
             }
-            
+
             pluginScript.src = pluginUrl;
             document.head.appendChild(pluginScript);
-            
+
             pluginScript.onload = () => {
               if (window._lmsTogglePluginLoading) {
                 window._lmsTogglePluginLoading.forEach(cb => cb());
@@ -292,7 +292,7 @@
               }
             };
           }
-          
+
           // Queue this embed to initialize once the plugin loads
           window._lmsTogglePluginLoading.push((failed) => {
             if (!failed && window.LmsTogglePlugin) {
@@ -320,14 +320,14 @@
               if (iframe.contentWindow === e.source) {
                 iframe.setAttribute('height', newHeight);
                 if (typeof iframe.__updateToggleHeight === 'function') {
-                    iframe.__updateToggleHeight(newHeight);
+                  iframe.__updateToggleHeight(newHeight);
                 } else {
-                    const container = iframe.closest('.lms-widget-container');
-                    if (container) {
-                      container.style.height = newHeight + 'px';
-                    } else {
-                      iframe.style.height = newHeight + 'px';
-                    }
+                  const container = iframe.closest('.lms-widget-container');
+                  if (container) {
+                    container.style.height = newHeight + 'px';
+                  } else {
+                    iframe.style.height = newHeight + 'px';
+                  }
                 }
               }
             });
