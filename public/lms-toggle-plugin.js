@@ -271,7 +271,18 @@
               : e.data.payload?.content;
             if (typeof content === 'string') {
               textarea.value = content;
+              try {
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                textarea.dispatchEvent(new Event('change', { bubbles: true }));
+              } catch (err) {}
             }
+            try {
+              iframe.contentWindow.postMessage({
+                type: 'SYNC_ACK',
+                msgId: e.data.msgId || e.data.payload?.msgId,
+                payload: { success: true }
+              }, '*');
+            } catch (err) {}
           }
         }
       };

@@ -301,7 +301,7 @@
       window.addEventListener('message', (e) => {
         if (e.data && e.data.type === 'SYNC_HEIGHT') {
           const newHeight = e.data.payload?.height || e.data.height;
-          if (newHeight && typeof newHeight === 'number' && newHeight >= 200) {
+          if (newHeight && typeof newHeight === 'number' && newHeight >= 100) {
             const iframes = document.querySelectorAll('iframe[data-lms-widget]');
             iframes.forEach(iframe => {
               if (iframe.contentWindow === e.source) {
@@ -319,6 +319,31 @@
               }
             });
           }
+        } else if (e.data && e.data.type === 'SYNC_CONTENT') {
+          const iframes = document.querySelectorAll('iframe[data-lms-widget]');
+          iframes.forEach(iframe => {
+            if (iframe.contentWindow === e.source) {
+              const questionBlock = iframe.closest('.que, .moodle-question, .formulation, form') || document;
+              const textarea = questionBlock.querySelector('textarea');
+              if (textarea) {
+                const content = typeof e.data.payload === 'string' ? e.data.payload : e.data.payload?.content;
+                if (typeof content === 'string') {
+                  textarea.value = content;
+                  try {
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    textarea.dispatchEvent(new Event('change', { bubbles: true }));
+                  } catch (err) {}
+                }
+                try {
+                  iframe.contentWindow.postMessage({
+                    type: 'SYNC_ACK',
+                    msgId: e.data.msgId || e.data.payload?.msgId,
+                    payload: { success: true }
+                  }, '*');
+                } catch (err) {}
+              }
+            }
+          });
         }
       });
     }
