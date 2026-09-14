@@ -1,4 +1,12 @@
 (function () {
+  const currentScript = document.currentScript;
+  let defaultOrigin = 'https://python-web-ide.pages.dev';
+  if (currentScript && currentScript.src) {
+    try {
+      defaultOrigin = new URL(currentScript.src).origin;
+    } catch (e) {}
+  }
+
   function decoratePreTagsInBlock(questionBlock) {
     const preTags = questionBlock.querySelectorAll('pre:not(#notice pre):not(.debugging pre)');
 
@@ -82,6 +90,12 @@
 
     const container = document.createElement('div');
     container.className = 'lms-widget-container';
+    container.setAttribute('data-widget-origin', '*');
+    container.setAttribute('data-origin', '*');
+    if (textarea) {
+      if (textarea.id) container.setAttribute('data-lms-target-textarea', '#' + textarea.id);
+      if (textarea.name) container.setAttribute('data-lms-textarea-name', textarea.name);
+    }
     container.style.position = 'relative';
     container.style.width = '100%';
     container.style.height = (height || 400) + 'px';
@@ -112,10 +126,12 @@
     const embeds = document.querySelectorAll('.python-ide-embed:not([data-initialized])');
     if (embeds.length === 0) return;
 
-    const currentScript = document.currentScript;
-    let origin = 'https://python-web-ide.pwlewis.workers.dev'; 
-    if (currentScript && currentScript.src) {
-      origin = new URL(currentScript.src).origin;
+    let origin = defaultOrigin;
+    const scriptRef = currentScript || document.currentScript;
+    if (scriptRef && scriptRef.src) {
+      try {
+        origin = new URL(scriptRef.src).origin;
+      } catch (e) {}
     }
 
     embeds.forEach(embed => {

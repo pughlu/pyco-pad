@@ -50,6 +50,15 @@
       container.className = 'lms-widget-container';
       // Signal to LMSWidgetManager that we handle answerbox visibility (do NOT hide to -9999px)
       container.setAttribute('data-lms-widget-show-answerbox', 'true');
+      // Set origin to '*' so LMSWidgetManager can communicate regardless of domain differences
+      container.setAttribute('data-widget-origin', '*');
+      container.setAttribute('data-origin', '*');
+      if (textarea.id) {
+        container.setAttribute('data-lms-target-textarea', '#' + textarea.id);
+      }
+      if (textarea.name) {
+        container.setAttribute('data-lms-textarea-name', textarea.name);
+      }
       container.style.position = 'absolute';
       container.style.top = '0';
       container.style.left = '0';
@@ -190,11 +199,20 @@
         }
       }
 
-      // Listen for SYNC_HEIGHT postMessage directly from the iframe
+      // Listen for messages directly from the iframe
       const onMessage = (e) => {
-        if (e.data && e.data.type === 'SYNC_HEIGHT' && (e.source === iframe.contentWindow || !e.source)) {
-          const h = e.data.payload?.height || e.data.height;
-          if (h) handleNewIframeHeight(h);
+        if (e.source === iframe.contentWindow && e.data) {
+          if (e.data.type === 'SYNC_HEIGHT') {
+            const h = e.data.payload?.height || e.data.height;
+            if (h) handleNewIframeHeight(h);
+          } else if (e.data.type === 'SYNC_CONTENT') {
+            const content = typeof e.data.payload === 'string' 
+              ? e.data.payload 
+              : e.data.payload?.content;
+            if (typeof content === 'string') {
+              textarea.value = content;
+            }
+          }
         }
       };
       window.addEventListener('message', onMessage);
@@ -203,6 +221,15 @@
 
       iframe.addEventListener('load', () => {
         iframe.setAttribute('data-lms-toggle-instance', 'true');
+        // If textarea has initial content, ensure IDE gets it
+        if (textarea.value && textarea.value.trim().length > 0) {
+          try {
+            iframe.contentWindow.postMessage({
+              type: 'LOAD_CONTENT',
+              payload: { content: textarea.value }
+            }, '*');
+          } catch (err) {}
+        }
         // Give short delay for SYNC_HEIGHT message if coming right on load, then reveal
         setTimeout(() => {
           markReadyAndApply(true);
@@ -223,6 +250,17 @@
         try {
           localStorage.setItem('py_ide_view_mode', viewMode);
         } catch (e) {}
+
+        // If switching back into IDE, sync latest textarea changes to IDE
+        if (viewMode === 'iframe' && iframe.contentWindow) {
+          try {
+            iframe.contentWindow.postMessage({
+              type: 'LOAD_CONTENT',
+              payload: { content: textarea.value }
+            }, '*');
+          } catch (err) {}
+        }
+
         updateView(true);
       });
 
