@@ -85,7 +85,6 @@
     container.style.position = 'relative';
     container.style.width = '100%';
     container.style.height = (height || 400) + 'px';
-    container.style.transition = 'height 0.2s ease-out';
     embed.appendChild(container);
 
     const iframe = document.createElement('iframe');

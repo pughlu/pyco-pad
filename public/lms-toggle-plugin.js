@@ -18,7 +18,7 @@
       placeholder.style.width = '100%';
       placeholder.style.height = originalTextareaHeight + 'px';
       placeholder.style.position = 'relative';
-      placeholder.style.transition = 'height 0.2s ease-out';
+      placeholder.style.transition = 'none';
       if (computedStyle && computedStyle.margin && computedStyle.margin !== '0px') {
         placeholder.style.margin = computedStyle.margin;
       }
@@ -100,12 +100,11 @@
         if (!animate) {
           textarea.style.transition = 'none';
           iframe.style.transition = 'none';
-          placeholder.style.transition = 'none';
         } else {
           textarea.style.transition = 'opacity 0.2s ease-out';
           iframe.style.transition = 'opacity 0.2s ease-out';
-          placeholder.style.transition = 'height 0.2s ease-out';
         }
+        placeholder.style.transition = 'none';
 
         if (!animate) void placeholder.offsetHeight; // reflow
 
@@ -125,18 +124,9 @@
           iframe.style.setProperty('pointer-events', 'auto', 'important');
           iframe.style.setProperty('z-index', '2', 'important');
           
-          // Expand placeholder to accurate iframe height
+          // Expand placeholder to accurate iframe height instantly
           placeholder.style.height = iframeHeight + 'px';
-          
-          if (animate) {
-            setTimeout(() => {
-              if (viewMode === 'iframe') {
-                placeholder.style.background = 'transparent';
-              }
-            }, 200);
-          } else {
-            placeholder.style.background = 'transparent';
-          }
+          placeholder.style.background = 'transparent';
         } else {
           toggleBtn.textContent = 'Switch to IDE';
           
