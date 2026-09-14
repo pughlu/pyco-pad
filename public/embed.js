@@ -146,7 +146,6 @@
     iframe.setAttribute('width', '100%');
     iframe.setAttribute('height', height || 400);
     iframe.style.width = '100%';
-    iframe.style.height = '100%';
     iframe.style.border = 'none';
     iframe.style.outline = 'none';
     iframe.style.borderRadius = '4px';
@@ -195,7 +194,6 @@
         const deltaY = moveEvt.clientY - startY;
         const newHeight = Math.max(180, Math.round(startHeight + deltaY));
         container.style.height = newHeight + 'px';
-        iframe.style.height = newHeight + 'px';
         iframe.setAttribute('height', newHeight);
       };
 
@@ -386,8 +384,6 @@
                   const container = iframe.closest('.lms-widget-container');
                   if (container) {
                     container.style.height = newHeight + 'px';
-                  } else {
-                    iframe.style.height = newHeight + 'px';
                   }
                 }
               }

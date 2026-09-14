@@ -148,7 +148,6 @@
       iframe.setAttribute('width', '100%');
       iframe.setAttribute('height', iframeHeight);
       iframe.style.width = '100%';
-      iframe.style.height = '100%';
       iframe.style.border = 'none';
       iframe.style.outline = 'none';
       iframe.style.borderRadius = '4px';
