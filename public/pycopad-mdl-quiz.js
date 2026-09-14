@@ -1,6 +1,6 @@
 (function () {
   const currentScript = document.currentScript;
-  let defaultOrigin = 'https://python-web-ide.pwlewis.pages.dev';
+  let defaultOrigin = 'https://pyco-pad.pages.dev';
   if (currentScript && currentScript.src) {
     try {
       defaultOrigin = new URL(currentScript.src).origin;

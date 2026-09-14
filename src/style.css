@@ -116,9 +116,21 @@ html {
 }
 
 .main-title {
-  font-weight: 600;
-  color: var(--text-title);
-  font-size: 1em;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-family: "Fira Code", monospace, sans-serif;
+  font-weight: 700;
+  font-size: 1.25em;
+  letter-spacing: 0px;
+  line-height: 1;
+}
+
+.pyco-logo-py {
+  color: #3776AB;
+}
+.pyco-logo-pad {
+  color: #FFD43B;
 }
 
 .toolbar-left, .toolbar-actions {
