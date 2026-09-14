@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PycoPad Demo</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PycoPad Standalone Demo</h1>
+    <p>This page uses the standalone <code>pycopad.js</code> script with the new <code>&lt;pyco-pad&gt;</code> element.</p>
+
+    <h2>Example 1: Template Code</h2>
+    <pyco-pad theme="dark" data-height="250">
+def greet(name):
+    print(f"Hello, {name}!")
+
+greet("World")
+    </pyco-pad>
+
+    <h2>Example 2: Empty Pad</h2>
+    <pyco-pad theme="light" data-height="200"></pyco-pad>
+  </div>
+
+  <script src="/pycopad.js"></script>
+</body>
+</html>

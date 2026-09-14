@@ -1,7 +1,12 @@
 (function() {
   window.LmsTogglePlugin = {
-    applyToggleOverlay: function(embed, textarea, height, rows, origin, widgetBg, autoload) {
+    applyToggleOverlay: function(embed, textarea, height, rows, origin, widgetBg, autoload, starterCode) {
       if (!textarea) return false;
+
+      // Inject starter code if the textarea is completely empty
+      if (starterCode && !textarea.value) {
+        textarea.value = starterCode;
+      }
 
       // Save dimensions
       const originalTextareaHeight = textarea.clientHeight || (rows > 0 ? rows * 22 : 160);
