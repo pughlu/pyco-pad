@@ -108,6 +108,7 @@ if (isSyncEnabled) {
             const msgId = 'msg-' + Math.random().toString(36).substr(2, 9);
             window.parent.postMessage({
                 type: 'SYNC_CONTENT',
+                msgId,
                 payload: { content: editor.getValue(), msgId }
             }, '*');
         }, 200);
