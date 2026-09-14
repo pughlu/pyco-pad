@@ -172,15 +172,17 @@
       // Ensure the external LMSWidgetManager module is loaded
       if (typeof window.loadLMSWidgetManager === 'function') {
         window.loadLMSWidgetManager();
-      } else if (!window.LMSWidgetManager && !window._lmsWidgetManagerLoading) {
-        window._lmsWidgetManagerLoading = true;
-        const mgrUrl = window.LMS_WIDGET_MANAGER_URL || 'https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.es.js';
-        import(mgrUrl)
-          .then(m => { window.LMSWidgetManager = m; })
-          .catch(err => {
-            window._lmsWidgetManagerLoading = false;
-            console.error('[LmsTogglePlugin] Error loading LMSWidgetManager from ' + mgrUrl + ':', err);
-          });
+      } else if (!window.LMSWidgetManager) {
+        const mgrUrl = window.LMS_WIDGET_MANAGER_URL || 'https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.iife.js';
+        const existing = document.querySelector('script[data-lms-manager]');
+        if (!existing) {
+          const script = document.createElement('script');
+          script.setAttribute('data-lms-manager', 'true');
+          script.src = mgrUrl;
+          script.onload = () => { if (typeof window.LMSWidgetManager !== 'undefined') { /* loaded */ } };
+          script.onerror = (err) => console.error('[LmsTogglePlugin] Error loading LMSWidgetManager:', err);
+          document.head.appendChild(script);
+        }
       }
 
       function updateView(animate = true) {

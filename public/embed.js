@@ -8,26 +8,33 @@
   }
 
   // Centralized LMS Widget Manager CDN configuration
-  const DEFAULT_LMS_WIDGET_MANAGER_URL = 'https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.es.js';
+  const DEFAULT_LMS_WIDGET_MANAGER_URL = 'https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.iife.js';
   const lmsWidgetManagerUrl = window.LMS_WIDGET_MANAGER_URL ||
     (currentScript && (currentScript.getAttribute('data-widget-manager-url') || currentScript.getAttribute('data-manager-url'))) ||
     DEFAULT_LMS_WIDGET_MANAGER_URL;
   window.LMS_WIDGET_MANAGER_URL = lmsWidgetManagerUrl;
 
   function loadLMSWidgetManager() {
-    if (window.LMSWidgetManager || window._lmsWidgetManagerLoading) {
-      return;
+    if (window.LMSWidgetManager) {
+      return Promise.resolve(window.LMSWidgetManager);
     }
-    window._lmsWidgetManagerLoading = true;
-    const url = window.LMS_WIDGET_MANAGER_URL || DEFAULT_LMS_WIDGET_MANAGER_URL;
-    import(url)
-      .then(m => {
-        window.LMSWidgetManager = m;
-      })
-      .catch(err => {
-        window._lmsWidgetManagerLoading = false;
-        console.error('[Embed] Error loading LMSWidgetManager from ' + url + ':', err);
-      });
+
+    return new Promise((resolve, reject) => {
+      // Check if script tag is already in the document
+      const existing = document.querySelector('script[data-lms-manager]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(window.LMSWidgetManager));
+        existing.addEventListener('error', reject);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.setAttribute('data-lms-manager', 'true');
+      script.src = window.LMS_WIDGET_MANAGER_URL || DEFAULT_LMS_WIDGET_MANAGER_URL;
+      script.onload = () => resolve(window.LMSWidgetManager);
+      script.onerror = (err) => reject(new Error('Failed to load LMSWidgetManager: ' + err));
+      document.head.appendChild(script);
+    });
   }
   window.loadLMSWidgetManager = loadLMSWidgetManager;
 
