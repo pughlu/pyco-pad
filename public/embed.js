@@ -208,21 +208,23 @@
 
       container.appendChild(iframe);
 
-      // Step 5: "When iframe is ready swap it for the placeholder. Each transition should be a 1sec fade"
+      // Step 5: The iframe fades in directly OVER the placeholder
       let swapped = false;
       const swapForPlaceholder = () => {
         if (swapped) return;
         swapped = true;
-        console.log('[Embed] Iframe ready. Swapping with 1-second fade...');
-        placeholder.style.opacity = '0';
+        console.log('[Embed] Iframe ready. Fading in iframe OVER the placeholder...');
+        // Keep the placeholder solid (opacity 1) underneath so there is never a blank gap
+        // The iframe (z-index: 2) fades in smoothly right on top of it:
         iframe.style.opacity = '1';
         iframe.style.pointerEvents = 'auto';
 
+        // Remove the placeholder only after the iframe is 100% visible and opaque
         setTimeout(() => {
           if (placeholder.parentNode) {
             placeholder.parentNode.removeChild(placeholder);
           }
-        }, 1000);
+        }, 1100);
       };
 
       iframe.addEventListener('load', swapForPlaceholder);
