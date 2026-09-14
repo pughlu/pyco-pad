@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "cp node_modules/lms-widget-manager/dist/lms-widget-manager.iife.js public/ || echo 'Ensure lms-widget-manager is built'"
+  },
+  "dependencies": {
+    "lms-widget-manager": "github:pughlu/lms-widget-manager"
   },
   "devDependencies": {
     "typescript": "^5.2.2",

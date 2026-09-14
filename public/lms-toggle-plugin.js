@@ -181,7 +181,7 @@
       if (typeof window.loadLMSWidgetManager === 'function') {
         window.loadLMSWidgetManager();
       } else if (!window.LMSWidgetManager) {
-        const mgrUrl = window.LMS_WIDGET_MANAGER_URL || 'https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.iife.js';
+        const mgrUrl = window.LMS_WIDGET_MANAGER_URL || new URL('lms-widget-manager.iife.js', origin).href;
         const existing = document.querySelector('script[data-lms-manager]');
         if (!existing) {
           const script = document.createElement('script');

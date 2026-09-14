@@ -17,7 +17,7 @@
   };
 
   // Centralized LMS Widget Manager CDN configuration
-  const DEFAULT_LMS_WIDGET_MANAGER_URL = 'https://lms-widget-manager.pwlewis.workers.dev/lms-widget-manager.iife.js';
+  const DEFAULT_LMS_WIDGET_MANAGER_URL = new URL('lms-widget-manager.iife.js', defaultOrigin).href;
   const lmsWidgetManagerUrl = window.LMS_WIDGET_MANAGER_URL ||
     (currentScript && (currentScript.getAttribute('data-widget-manager-url') || currentScript.getAttribute('data-manager-url'))) ||
     DEFAULT_LMS_WIDGET_MANAGER_URL;
