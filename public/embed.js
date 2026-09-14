@@ -168,15 +168,50 @@
       }
 
       if (strategy === 'toggle') {
-        // We load the plugin if not loaded
         if (!window.LmsTogglePlugin) {
-          const pluginScript = document.createElement('script');
-          pluginScript.src = `${origin}/lms-toggle-plugin.js`;
-          document.head.appendChild(pluginScript);
+          // If we haven't started loading the plugin yet, start now.
+          if (!window._lmsTogglePluginLoading) {
+            window._lmsTogglePluginLoading = [];
+            const pluginScript = document.createElement('script');
+            
+            // Resolve relative to embed.js path
+            let pluginUrl = `${origin}/lms-toggle-plugin.js`;
+            if (currentScript && currentScript.src) {
+              try {
+                const urlObj = new URL(currentScript.src);
+                const pathParts = urlObj.pathname.split('/');
+                pathParts[pathParts.length - 1] = 'lms-toggle-plugin.js';
+                urlObj.pathname = pathParts.join('/');
+                pluginUrl = urlObj.href;
+              } catch (e) {}
+            }
+            
+            pluginScript.src = pluginUrl;
+            document.head.appendChild(pluginScript);
+            
+            pluginScript.onload = () => {
+              if (window._lmsTogglePluginLoading) {
+                window._lmsTogglePluginLoading.forEach(cb => cb());
+                window._lmsTogglePluginLoading = null;
+              }
+            };
+            pluginScript.onerror = () => {
+              console.error("[Embed] Failed to load toggle plugin from", pluginUrl);
+              if (window._lmsTogglePluginLoading) {
+                window._lmsTogglePluginLoading.forEach(cb => cb(true));
+                window._lmsTogglePluginLoading = null;
+              }
+            };
+          }
           
-          pluginScript.onload = () => {
-            window.LmsTogglePlugin.applyToggleOverlay(embed, textarea, height, rows, origin, widgetBg, autoload);
-          };
+          // Queue this embed to initialize once the plugin loads
+          window._lmsTogglePluginLoading.push((failed) => {
+            if (!failed && window.LmsTogglePlugin) {
+              window.LmsTogglePlugin.applyToggleOverlay(embed, textarea, height, rows, origin, widgetBg, autoload);
+            } else {
+              applyDefaultSwap(embed, textarea, height, rows, origin, widgetBg);
+            }
+          });
         } else {
           window.LmsTogglePlugin.applyToggleOverlay(embed, textarea, height, rows, origin, widgetBg, autoload);
         }
