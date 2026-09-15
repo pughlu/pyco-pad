@@ -70,7 +70,8 @@
       iframe.style.width = '100%';
       iframe.style.border = 'none';
       iframe.style.outline = 'none';
-      iframe.style.borderRadius = '4px';
+      iframe.style.borderRadius = '8px';
+      iframe.style.overflow = 'hidden';
       iframe.style.background = widgetBg;
       
       // Load standard mode (no sync=true required)

@@ -112,6 +112,23 @@ html {
   flex-direction: column;
 }
 
+body.is-sync-enabled,
+body.is-embedded {
+  border-radius: 8px;
+}
+
+body.is-sync-enabled .main-toolbar,
+body.is-embedded .main-toolbar {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+body.is-sync-enabled .container,
+body.is-embedded .container {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
 /* Main Toolbar */
 .main-toolbar {
   height: 40px;

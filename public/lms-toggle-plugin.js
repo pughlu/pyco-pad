@@ -136,6 +136,7 @@
       container.style.left = '0';
       container.style.width = '100%';
       container.style.height = '100%';
+      container.style.borderRadius = '8px';
       container.style.transition = 'opacity 0.2s ease-out';
       
       // Insert placeholder before textarea
@@ -163,7 +164,8 @@
       iframe.style.width = '100%';
       iframe.style.border = 'none';
       iframe.style.outline = 'none';
-      iframe.style.borderRadius = '4px';
+      iframe.style.borderRadius = '8px';
+      iframe.style.overflow = 'hidden';
       iframe.style.background = widgetBg;
       iframe.style.position = 'absolute';
       iframe.style.top = '0';

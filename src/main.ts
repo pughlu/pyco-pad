@@ -40,8 +40,13 @@ const targetRows = parseInt(urlParams.get('rows') || '0', 10);
 
 if (isSyncEnabled) {
     syncStatus.style.display = 'inline-block';
+    document.body.classList.add('is-sync-enabled');
 } else {
     syncStatus.style.display = 'none';
+}
+
+if (window.self !== window.top) {
+    document.body.classList.add('is-embedded');
 }
 
 if (isSafeModeVisible) {
@@ -174,7 +179,7 @@ const fontSizeDisplay = document.getElementById('font-size-display') as HTMLElem
 
 // 1. Theme Persistence
 function applyTheme(theme: string) {
-    document.body.className = '';
+    document.body.classList.remove('theme-light', 'theme-hc');
     if (theme === 'light') {
         document.body.classList.add('theme-light');
     } else if (theme === 'hc') {

@@ -78,6 +78,7 @@
     container.style.position = 'relative';
     container.style.width = '100%';
     container.style.height = (height || 400) + 'px';
+    container.style.borderRadius = '8px';
     embed.appendChild(container);
 
     const iframe = document.createElement('iframe');
@@ -87,7 +88,8 @@
     iframe.style.width = '100%';
     iframe.style.border = 'none';
     iframe.style.outline = 'none';
-    iframe.style.borderRadius = '4px';
+    iframe.style.borderRadius = '8px';
+    iframe.style.overflow = 'hidden';
     iframe.style.background = widgetBg;
 
     const rowsParam = rows > 0 ? `&rows=${rows}` : '';
